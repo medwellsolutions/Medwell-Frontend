@@ -1,8 +1,44 @@
 import React from 'react'
-
+import { useState } from 'react'
+import axios from 'axios'
 const Login = () => {
+  const [emailId, setEmailId] = useState("pranaisaireddy@gmail.com");
+  const [password, setPassword] = useState("Pranai123@");
+  const login = async ()=>{
+    try{
+      const res = await axios.post('http://localhost:1777/login',{
+      emailId,
+      password
+      },{withCredentials:true})
+      console.log(res.data);
+    }catch(err){
+      console.log(err);
+    }
+    
+  }
   return (
-    <div>login</div>
+    <div className = "flex ietms-center justify-center">
+      <div className="card bg-base-100 w-96 shadow-xl mt-5">
+        <div className="card-body">
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">Email Id</legend>
+            <input value = {emailId} onChange={(e)=>{
+              setEmailId(e.target.value);
+            }} type="text" className="input" placeholder="Type here" />
+          </fieldset>
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">Password</legend>
+            <input value = {password} onChange={(e)=>{
+              setPassword(e.target.value);
+            }} type="text" className="input" placeholder="Type here" />
+          </fieldset>
+          <div className="card-actions justify-end">
+            <button onClick = {login} className="btn btn-primary">Login</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
   )
 }
 
