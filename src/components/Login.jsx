@@ -10,6 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState("Pranai123@");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [error, setError] = useState("");
   
   const login = async ()=>{
     try{
@@ -23,6 +24,7 @@ const Login = () => {
       navigate('/feed');
       
     }catch(err){
+      setError(err?.response?.data || "Try again")
       console.log(err);
     }
     
@@ -43,7 +45,9 @@ const Login = () => {
               setPassword(e.target.value);
             }} type="text" className="input" placeholder="Type here" />
           </fieldset>
+          <p className="text-red-500">{error}</p>
           <div className="card-actions justify-end">
+            
             <button onClick = {login} className="btn btn-primary">Login</button>
           </div>
         </div>
