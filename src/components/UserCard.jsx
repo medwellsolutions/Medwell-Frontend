@@ -1,12 +1,11 @@
 import React from "react";
-import pic from "../utils/DP.jpg"
 const UserCard = ({user})=>{
     const { firstName, lastName, skills, photoUrl } = user;
     return(
         <div className="card bg-base-100 w-96 shadow-sm">
             <figure className="h-100">
                 <img
-                src={pic}
+                src={photoUrl}
                 alt="Shoes" />
             </figure>
             <div className="card-body">

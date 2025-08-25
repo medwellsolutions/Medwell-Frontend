@@ -5,22 +5,26 @@ import { BASE_URL } from "../utils/constants";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { removeUser } from "../utils/userSlice";
+import {removeFeed} from '../utils/feedSlice';
 const Navbar = ()=>{
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const userData = useSelector((store)=>{
     return store.user;
   })
+
   var dp = "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
   if(userData){
-    dp = pic;
+    dp = userData.photoUrl;
   }
   const handleLogout= async ()=>{
     try{
+                                                    //{}-> Post should send data, as we are not sending any data we send empty {}
       const res = await axios.post(BASE_URL+'/logout',{},{
         withCredentials:true
       });
-      dispatch(removeUser()); 
+      dispatch(removeUser());
+      dispatch(removeFeed());
       navigate('/login');
     }catch(err){
       console.log(err.message);
@@ -39,7 +43,7 @@ const Navbar = ()=>{
         <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
           <div className="w-10 rounded-full">
             <img
-              alt="Tailwind CSS Navbar component"
+              alt="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
               src= {dp}/>
           </div>
         </div>
