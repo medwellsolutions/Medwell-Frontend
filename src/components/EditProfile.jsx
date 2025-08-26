@@ -85,7 +85,7 @@ const EditProfile = ({data}) => {
         </div>
       </div>
     </div>
-    <div className="card bg-base-100 w-96 shadow-sm">
+    <div className="card bg-base-100 w-96 shadow-sm my-10">
           <figure className="h-100">
             <img
               src={photoUrl}

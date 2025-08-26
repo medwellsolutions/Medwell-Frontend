@@ -60,6 +60,9 @@ const Navbar = ()=>{
               Connections
               <span className="badge">New</span>
             </Link>
+            <Link to ="/connectionrequests" className="justify-between">
+              Requests
+            </Link>
           </li>
           <li><a onClick = {handleLogout}>Logout</a></li>
         </ul>
