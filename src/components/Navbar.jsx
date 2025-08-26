@@ -53,10 +53,14 @@ const Navbar = ()=>{
           <li>
             <Link to ="/profile" className="justify-between">
               Profile
+            </Link>
+          </li>
+          <li>
+            <Link to ="/connections" className="justify-between">
+              Connections
               <span className="badge">New</span>
             </Link>
           </li>
-          <li><a>Settings</a></li>
           <li><a onClick = {handleLogout}>Logout</a></li>
         </ul>
       </div>
