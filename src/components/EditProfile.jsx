@@ -3,6 +3,7 @@ import React from 'react'
 import { useState } from 'react';
 import { BASE_URL } from '../utils/constants';
 import pic from '../utils/DP.jpg';
+import { useNavigate } from 'react-router-dom';
 const EditProfile = ({data}) => {
     const [firstName, setFirstName] = useState(data.firstName);
     const [lastName, setLastName] = useState(data.lastName);
@@ -13,6 +14,7 @@ const EditProfile = ({data}) => {
     const [photoUrl, setPhotoUrl] = useState(data.photoUrl);
     const [error, setError] = useState("");
     const [showToast, setShowToast] = useState(false);
+    const navigate = useNavigate();
 
     const update = async ()=>{
         try{
@@ -29,10 +31,10 @@ const EditProfile = ({data}) => {
             {setInterval( ( )=>{
               setShowToast(false);
             },3000 )}
+            navigate('/feed')
             setError("");
         }catch(err){
             setError(err?.response?.data);
-            // console.log(err);
         }
         
     }

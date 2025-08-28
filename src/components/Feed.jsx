@@ -27,8 +27,14 @@ const Feed = () => {
   useEffect(()=>{
     getFeed();
   }, [])
-  
-  return feedData &&  (
+  if(feedData==null){
+    return <h1>Null</h1>
+  }
+  if(feedData.length<=0){
+    console.log(feedData+" "+ feedData.length);
+    return <h1> No feed to Show</h1>
+  }
+  return(
     <div className = "flex justify-center"> 
       <UserCard user = {feedData[0]} /> 
     </div>
