@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const slides = [
   {
@@ -18,21 +18,25 @@ const slides = [
 ];
 
 const HeroSection = () => {
-  const [idx, setIdx] = useState(0);
+  
+  const [slideNo, setSlideNo] = useState(0);
+  const changeSlide = (val)=>{
+    setSlideNo((crr)=>{
+      const nw = (crr+val+slides.length)%slides.length;
+      return nw;
+    })
+  }
 
-  useEffect(() => {
-    const id = setInterval(() => setIdx((i) => (i + 1) % slides.length), 5000);
-    return () => clearInterval(id);
-  }, []);
-
-  const go = (d) => setIdx((i) => (i + d + slides.length) % slides.length);
-
-  const s = slides[idx];
+  const s = slides[slideNo];
 
   return (
     <section className="relative">
       <div className="relative h-[64vh] md:h-[72vh]">
-        <img src={s.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img
+          src={s.image}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
+        />
         <div className="absolute inset-0 bg-black/40" />
 
         <div className="relative z-10 h-full">
@@ -45,9 +49,11 @@ const HeroSection = () => {
                   <span className="text-orange-400">$10</span>
                 </span>
               </h1>
-              {s.subtitle && <p className="mt-4 text-lg text-neutral-200">{s.subtitle}</p>}
+              {s.subtitle && (
+                <p className="mt-4 text-lg text-neutral-200">{s.subtitle}</p>
+              )}
               <a
-                href="#get-started"
+                // href="#get-started"
                 className="mt-6 inline-flex items-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-6 py-3"
               >
                 Getting Started
@@ -56,22 +62,45 @@ const HeroSection = () => {
           </div>
         </div>
 
+        {/* Left arrow */}
+        <div>
         <button
-          onClick={() => go(-1)}
+          onClick = {()=>{changeSlide(-1)}}
           aria-label="Prev"
-          className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 hover:bg-white p-2"
+          className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 hover:bg-white p-2 z-20"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" className="fill-neutral-800">
-            <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            className="stroke-neutral-800"
+            fill="none"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
+        </div>
+
+        {/* Right arrow */}
         <button
-          onClick={() => go(1)}
+          onClick = {()=>{changeSlide(1)}}
           aria-label="Next"
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 hover:bg-white p-2"
+          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 hover:bg-white p-2 z-20"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" className="fill-neutral-800">
-            <path d="m10 6 1.41 1.41L8.83 10H20v2H8.83l2.58 2.59L10 16l-6-6 6-6z"/>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            className="stroke-neutral-800"
+            fill="none"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 6l6 6-6 6" />
           </svg>
         </button>
       </div>
