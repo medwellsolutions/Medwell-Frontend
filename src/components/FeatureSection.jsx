@@ -15,7 +15,7 @@ const FeatureSection = () => {
           {features.map((f) => (
             <div
               key={f.title}
-              className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 text-center hover:shadow-md transition"
+              className="text-gray-500 bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 text-center hover:shadow-md transition"
             >
               <div className="mx-auto w-16 h-16 rounded-full bg-orange-50 flex items-center justify-center shadow">
                 <svg width="26" height="26" viewBox="0 0 24 24" className="fill-orange-500">
