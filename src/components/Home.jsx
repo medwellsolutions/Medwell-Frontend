@@ -4,6 +4,7 @@ import FeatureSection from "./FeatureSection";
 import About from "./About";
 import Campaigns from "./Campaigns";
 import StatsStrip from "./StatsStrip";
+import Volunteers from "./Volunteers";
 
 const Home = () => {
   return (
@@ -13,6 +14,7 @@ const Home = () => {
       <About/>
       <Campaigns/>
       <StatsStrip/>
+      <Volunteers/>
     </>
   );
 };
