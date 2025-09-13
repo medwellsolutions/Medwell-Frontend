@@ -13,10 +13,11 @@ function App() {
   return (
     <BrowserRouter basename='/'>
       <Routes>
-        <Route path = '/' element = {<Body/>}>
         <Route path = '/' element = {<Home/>}></Route>
+        <Route path = '/' element = {<Body/>}>
         <Route path = '/login' element = {<Login/>}></Route>
         </Route>
+
       </Routes>
     </BrowserRouter>
   )

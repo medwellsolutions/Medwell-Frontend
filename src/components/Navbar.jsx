@@ -6,7 +6,7 @@ const links = [
   { label: "Events", href: "#campaigns" },
   { label: "Pages", href: "/#pages" },
   { label: "News", href: "/#news" },
-  { label: "Contact Us", href: "/#contact" },
+  { label: "Contact Us", href: "#contact" },
 ];
 
 const Navbar = () => {

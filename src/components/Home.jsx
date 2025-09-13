@@ -7,10 +7,12 @@ import StatsStrip from "./StatsStrip";
 import Volunteers from "./Volunteers";
 import BecomeVolunteer from "./BecomeVolunteer";
 import ContactUs from "./ContactUs";
+import Header from './Header';
 
 const Home = () => {
   return (
     <>
+      <Header/>  
       <HeroSection />
       <FeatureSection />
       <About/>
