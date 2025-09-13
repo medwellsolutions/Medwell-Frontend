@@ -2,9 +2,9 @@ import React from "react";
 
 const TopInfoBar = () => {
   return (
-    <div className="w-full bg-neutral-900 text-neutral-200 text-sm p-1">
-      <div className="mx-auto max-w-7xl h-10 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        <div className="flex items-center gap-6">
+    <div className=" hidden lg:block w-full bg-neutral-900 text-neutral-200 text-sm p-1">
+      <div className="mx-auto max-w-7xl h-auto sm:h-10 px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-6 gap-y-1">
           <a href="dev.medwellsolutions@gmail.com">
             <span className=" hover:text-orange-500 inline-flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" className="fill-current">
@@ -25,7 +25,7 @@ const TopInfoBar = () => {
         <div className="flex items-center gap-6">
           <a href="#" className="hover:text-orange-500">FAQs</a>
           <a href="#" className="hover:text-orange-500">Networks</a>
-          <a href="#donate" className=" bg-orange-500 hover:bg-orange-600 text-white px-3 py-5">
+          <a href="#donate" className=" bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 sm:py-5">
             Donate Now
           </a>
         </div>

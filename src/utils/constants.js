@@ -1,3 +1,0 @@
-const image2 ="https://www.sos-childrensvillages.org/getmedia/89afa257-6362-40a2-a561-3f57b368726f/Day-of-the-African-Child_600x300.jpg?width=600&height=300&ext=.jpg"
-const image3 ="https://images.squarespace-cdn.com/content/v1/58e26c28893fc0a495c5e7d8/35c292b2-4466-41c1-b210-5658071f6ac1/Photo+1_Africa+Day+blog_header.png"
-const bg= "https://nbcnews.shorthandstories.com/mica-mined-madagascar/assets/vnxvjPUGHZ/opener-1920x1080.jpeg"
