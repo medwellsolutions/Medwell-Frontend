@@ -5,6 +5,7 @@ import About from "./About";
 import Campaigns from "./Campaigns";
 import StatsStrip from "./StatsStrip";
 import Volunteers from "./Volunteers";
+import BecomeVolunteer from "./BecomeVolunteer";
 
 const Home = () => {
   return (
@@ -15,6 +16,7 @@ const Home = () => {
       <Campaigns/>
       <StatsStrip/>
       <Volunteers/>
+      <BecomeVolunteer/>
     </>
   );
 };
