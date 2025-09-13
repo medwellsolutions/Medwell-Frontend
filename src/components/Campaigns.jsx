@@ -10,7 +10,7 @@ const currency = (n) => n.toLocaleString("en-US", { style: "currency", currency:
 
 const Campaigns = () => {
   return (
-    <section
+    <section id = 'campaigns'
       className="
         relative isolate
         bg-center bg-cover bg-no-repeat

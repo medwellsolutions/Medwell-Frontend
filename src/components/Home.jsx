@@ -6,6 +6,7 @@ import Campaigns from "./Campaigns";
 import StatsStrip from "./StatsStrip";
 import Volunteers from "./Volunteers";
 import BecomeVolunteer from "./BecomeVolunteer";
+import ContactUs from "./ContactUs";
 
 const Home = () => {
   return (
@@ -17,6 +18,7 @@ const Home = () => {
       <StatsStrip/>
       <Volunteers/>
       <BecomeVolunteer/>
+      <ContactUs/>
     </>
   );
 };

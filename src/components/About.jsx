@@ -2,7 +2,7 @@ import React from "react";
 
 const About = () => {
   return (
-    <section className="relative bg-white py-16">
+    <section id = 'about' className="relative bg-white py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
         
         {/* Left Image */}

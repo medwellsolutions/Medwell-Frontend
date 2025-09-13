@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
 const links = [
-  { label: "Home", href: "/" },
-  { label: "About Us", href: "/#about" },
-  { label: "Events", href: "/#events" },
+  { label: "Home", href: "#home" },
+  { label: "About Us", href: "#about" },
+  { label: "Events", href: "#campaigns" },
   { label: "Pages", href: "/#pages" },
   { label: "News", href: "/#news" },
   { label: "Contact Us", href: "/#contact" },

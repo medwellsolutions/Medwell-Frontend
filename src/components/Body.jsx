@@ -8,7 +8,6 @@ const Body = () => {
     <>
       <Header />      
       <Outlet/>
-      <Footer/>
     </>
   )
 }
