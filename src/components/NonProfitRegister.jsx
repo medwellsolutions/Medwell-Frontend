@@ -86,11 +86,22 @@ const PARTICIPATION = [
   "Assign a representative to participate in quarterly PACE review",
   "Submit a success story, testimonial, or video for community visibility",
   "Promote the program through your newsletter, email list, or social media",
+  "Engage in student org collaborations or service hour tracking",
+  "Share flyers or co-brand campaign materials provided by Medwell",
+  "Co-develop cause-aligned Kahoot games or podcast topics",
+  "Provide performance metrics or beneficiary stories upon request",
 ];
 const PROGRAM_FIT = [
   "Mental Health / Stress Awareness",
   "Youth & Education",
   "Health Equity & Access",
+  "Autism & Neurodiversity",
+  "Cancer Support (e.g., Breast, Prostate, Pediatric)",
+  "Nutrition, Fitness & Healthy Living",
+  "Disability Inclusion",
+  "Youth & Education",
+  "Caregivers & Aging Adults",
+  "Health Equity & Access"
 ];
 
 /* ---------- main component ---------- */
