@@ -25,10 +25,8 @@ const LoginComp = () => {
       emailId,
       password
       },{withCredentials:true})
-      const details = await axios.post(BASE_URL+'/'
-
-      )  
-      navigate('/feed');
+      const nextRoute = res?.data?.data?.nextRoute;
+      navigate(nextRoute);
       
     }catch(err){
       setError(err?.response?.data || "Try again")
