@@ -47,6 +47,13 @@ function App() {
            <Route path="activity/:eventId" element={<ActivityUpload />} />
            <Route path="profile" element={<Profile />} />
           </Route>
+          <Route path = 'doctor/register' element = {<DoctorRegister/>}></Route>
+          <Route path = '/supplier/register/' element = {<SupplierRegister/>}></Route>
+          <Route path = '/nonprofit/register/' element = {<NonProfitRegister/>}></Route>
+          <Route path = '/sponsor/register/' element = {<SponsorRegister/>}></Route>
+
+          //needs editing later
+          <Route path = '/error' element = {<ErrorPage/>}></Route> 
       </Routes>
     </BrowserRouter>
   )
