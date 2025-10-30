@@ -1,1 +1,1 @@
-export const BASE_URL = 'http://medwell-backend-vkdg.onrender.com'
+export const BASE_URL = 'http://localhost:7777'

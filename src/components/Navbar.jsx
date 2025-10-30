@@ -1,52 +1,60 @@
+import axios from "axios";
 import React, { useState } from "react";
-
-const links = [
-  { label: "Home", href: "#home" },
-  { label: "About Us", href: "#about" },
-  { label: "Events", href: "#campaigns" },
-  { label: "Pages", href: "/#pages" },
-  { label: "News", href: "/#news" },
-  { label: "Contact Us", href: "#contact" },
-];
+import { Link, useNavigate } from "react-router-dom";
+import { BASE_URL } from "../utils/constants";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const logo = import.meta.env.VITE_MEDWELL_LOGO;
+
+  const handleLogout = async () => {
+     try{
+        //{}-> Post should send data, as we are not sending any data we send empty {}
+      const res = await axios.post(BASE_URL+'/logout',{},{
+        withCredentials:true
+      });
+      navigate('/');
+    }catch(err){
+      console.log(err.message);
+    }
+  };
 
   return (
     <div className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-200">
       <div className="mx-auto max-w-7xl h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2">
-          <svg width="28" height="28" viewBox="0 0 24 24" className="text-orange-500">
-            <path
-              className="fill-current"
-              d="M12 21s-7.5-4.35-9.33-8.82C1.82 8.86 4.02 6 7.08 6c1.6 0 3.05.8 3.92 2.02C11.87 6.8 13.32 6 14.92 6 17.98 6 20.18 8.86 21.33 12.18 19.5 16.65 12 21 12 21Z"
-            />
-          </svg>
-          <span className="text-xl text-black font-semibold">Medwell Solutions</span>
-        </a>
+        <Link to="/home" className="flex items-center gap-2">
+          <img
+            src={logo}
+            alt="Medwell Logo"
+            className="h-10 object-contain"
+            loading="eager"
+          />
+        </Link>
 
-        {/* Desktop nav + login */}
+        {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-6">
-          <nav className="flex items-center gap-6">
-            {links.map((l) => (
-              <a
-                key={l.label}
-                href={l.href}
-                className="text-neutral-700 hover:text-neutral-900"
-              >
-                {l.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Login button (right side) */}
-          <a
-            href="/login"
-            className="px-4 py-2 rounded-md border border-orange-500 text-orange-600 font-medium hover:bg-orange-50 transition"
+          <Link
+            to="/home"
+            className="text-neutral-700 hover:text-indigo-600 font-medium"
           >
-            Login
-          </a>
+            Home
+          </Link>
+
+          <Link
+            to="/home/profile"
+            className="text-neutral-700 hover:text-indigo-600 font-medium"
+          >
+            Profile
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 rounded-md border border-red-500 text-red-600 font-medium hover:bg-red-50 transition"
+          >
+            Logout
+          </button>
         </div>
 
         {/* Mobile hamburger */}
@@ -66,35 +74,38 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile Menu */}
       <div
         className={`md:hidden overflow-hidden transition-[max-height] duration-300 ease-in-out ${
-          open ? "max-h-96" : "max-h-0"
+          open ? "max-h-40" : "max-h-0"
         }`}
       >
         <div className="px-4 sm:px-6 pb-4 flex flex-col gap-3 bg-white/95 backdrop-blur">
-          {/* Mobile links */}
-          <nav className="flex flex-col">
-            {links.map((l) => (
-              <a
-                key={l.label}
-                href={l.href}
-                className="py-2 text-neutral-700 hover:text-neutral-900"
-                onClick={() => setOpen(false)}
-              >
-                {l.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Mobile login button */}
-          <a
-            href="/login"
-            className="mt-2 px-4 py-2 rounded-md border border-orange-500 text-orange-600 font-medium hover:bg-orange-50 transition text-center"
+          <Link
+            to="/home"
+            className="py-2 text-neutral-700 hover:text-indigo-600 font-medium"
             onClick={() => setOpen(false)}
           >
-            Login
-          </a>
+            Home
+          </Link>
+
+          <Link
+            to="/home/profile"
+            className="py-2 text-neutral-700 hover:text-indigo-600 font-medium"
+            onClick={() => setOpen(false)}
+          >
+            Profile
+          </Link>
+
+          <button
+            onClick={() => {
+              setOpen(false);
+              handleLogout();
+            }}
+            className="py-2 text-red-600 font-medium hover:bg-red-50 rounded-md text-left px-2"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </div>
