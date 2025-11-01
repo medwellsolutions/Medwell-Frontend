@@ -13,6 +13,8 @@ import ActivityUpload from './components/ActivityUpload';
 import MediaViewer from './components/MediaViewer';
 import MonthlyEvents from './components/MonthlyEvents';
 import Profile from './components/Profile';
+import appStore from './utils/appStore';
+import { Provider } from 'react-redux';
 
 function App() {
 
@@ -39,6 +41,7 @@ function App() {
   //   </BrowserRouter>
   //)
   return (
+    <Provider store = {appStore}>
     <BrowserRouter basename='/'>
       <Routes>
         <Route path = '/' element = {<Login/>} />
@@ -46,6 +49,7 @@ function App() {
            <Route index element={<MonthlyEvents />} />
            <Route path="activity/:eventId" element={<ActivityUpload />} />
            <Route path="profile" element={<Profile />} />
+           <Route path = 'admin/applications' element = {<Applications/>}></Route>
           </Route>
           <Route path = 'doctor/register' element = {<DoctorRegister/>}></Route>
           <Route path = '/supplier/register/' element = {<SupplierRegister/>}></Route>
@@ -56,6 +60,7 @@ function App() {
           <Route path = '/error' element = {<ErrorPage/>}></Route> 
       </Routes>
     </BrowserRouter>
+    </Provider>
   )
 }
 

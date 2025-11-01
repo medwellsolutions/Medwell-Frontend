@@ -2,20 +2,23 @@ import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
+  const userData = useSelector((store) => store.user);  // contains role
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const logo = import.meta.env.VITE_MEDWELL_LOGO;
 
   const handleLogout = async () => {
-     try{
-        //{}-> Post should send data, as we are not sending any data we send empty {}
-      const res = await axios.post(BASE_URL+'/logout',{},{
-        withCredentials:true
-      });
-      navigate('/');
-    }catch(err){
+    try {
+      await axios.post(
+        BASE_URL + "/logout",
+        {},
+        { withCredentials: true }
+      );
+      navigate("/");
+    } catch (err) {
       console.log(err.message);
     }
   };
@@ -23,6 +26,7 @@ const Navbar = () => {
   return (
     <div className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-200">
       <div className="mx-auto max-w-7xl h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        
         {/* Logo */}
         <Link to="/home" className="flex items-center gap-2">
           <img
@@ -35,19 +39,23 @@ const Navbar = () => {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-6">
-          <Link
-            to="/home"
-            className="text-neutral-700 hover:text-indigo-600 font-medium"
-          >
+          <Link to="/home" className="text-neutral-700 hover:text-indigo-600 font-medium">
             Home
           </Link>
 
-          <Link
-            to="/home/profile"
-            className="text-neutral-700 hover:text-indigo-600 font-medium"
-          >
+          <Link to="/home/profile" className="text-neutral-700 hover:text-indigo-600 font-medium">
             Profile
           </Link>
+
+          {/* ✅ Show only for Admin */}
+          {userData?.data?.role === "admin" && (
+            <Link
+              to="/home/admin/applications"
+              className="text-neutral-700 hover:text-indigo-600 font-medium"
+            >
+              Applications
+            </Link>
+          )}
 
           <button
             onClick={handleLogout}
@@ -96,6 +104,17 @@ const Navbar = () => {
           >
             Profile
           </Link>
+
+          {/* ✅ Mobile view for Admin */}
+          {userData?.role === "admin" && (
+            <Link
+              to="/home/admin/applications"
+              className="py-2 text-neutral-700 hover:text-indigo-600 font-medium"
+              onClick={() => setOpen(false)}
+            >
+              Applications
+            </Link>
+          )}
 
           <button
             onClick={() => {

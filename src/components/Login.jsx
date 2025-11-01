@@ -1,9 +1,13 @@
-import React, { useState } from 'react'
+import React, { use, useState } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../utils/constants'
+import { useDispatch } from 'react-redux'
+import {addUser} from  '../utils/userSlice';
+
 
 const Login = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate()
   const logo = import.meta.env.VITE_MEDWELL_LOGO
   const [firstName, setFirstName] = useState('')
@@ -19,6 +23,7 @@ const Login = () => {
   const login = async () => {
     try {
       const res = await axios.post(BASE_URL + '/login', { emailId, password }, { withCredentials: true })
+      dispatch(addUser(res.data));
       const nextRoute = res?.data?.data?.nextRoute
       navigate(nextRoute)
     } catch (err) {
