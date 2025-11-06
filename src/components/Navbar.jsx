@@ -5,7 +5,8 @@ import { BASE_URL } from "../utils/constants";
 import { useSelector } from "react-redux";
 
 const Navbar = () => {
-  const userData = useSelector((store) => store.user);  // contains role
+  const role = useSelector((store) => store.user?.data?.role);  // contains role
+  // const userData = useSelector((store) => store.user);  // contains role
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const logo = import.meta.env.VITE_MEDWELL_LOGO;
@@ -48,13 +49,10 @@ const Navbar = () => {
           </Link>
 
           {/* ✅ Show only for Admin */}
-          {userData?.data?.role === "admin" && (
-            <Link
-              to="/home/admin/applications"
-              className="text-neutral-700 hover:text-indigo-600 font-medium"
-            >
-              Applications
-            </Link>
+          {role === "admin" && (
+          <Link to="/home/admin/applications" className="text-neutral-700 hover:text-indigo-600 font-medium">
+            Applications
+          </Link>
           )}
 
           <button
@@ -106,14 +104,14 @@ const Navbar = () => {
           </Link>
 
           {/* ✅ Mobile view for Admin */}
-          {userData?.role === "admin" && (
-            <Link
-              to="/home/admin/applications"
-              className="py-2 text-neutral-700 hover:text-indigo-600 font-medium"
-              onClick={() => setOpen(false)}
-            >
-              Applications
-            </Link>
+          {role === "admin" && (
+          <Link
+            to="/home/admin/applications"
+            className="py-2 text-neutral-700 hover:text-indigo-600 font-medium"
+            onClick={() => setOpen(false)}
+          >
+            Applications
+          </Link>
           )}
 
           <button
