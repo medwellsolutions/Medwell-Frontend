@@ -5,8 +5,7 @@ import { BASE_URL } from "../utils/constants";
 import { useSelector } from "react-redux";
 
 const Navbar = () => {
-  const role = useSelector((store) => store.user?.data?.role);  // contains role
-  // const userData = useSelector((store) => store.user);  // contains role
+  const role = useSelector((store) => store.user?.data?.role); // user role
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const logo = import.meta.env.VITE_MEDWELL_LOGO;
@@ -48,11 +47,14 @@ const Navbar = () => {
             Profile
           </Link>
 
-          {/* ✅ Show only for Admin */}
+          {/* ✅ Admin only link */}
           {role === "admin" && (
-          <Link to="/home/admin/applications" className="text-neutral-700 hover:text-indigo-600 font-medium">
-            Applications
-          </Link>
+            <Link
+              to="/home/admin/applications"
+              className="text-neutral-700 hover:text-indigo-600 font-medium"
+            >
+              Applications
+            </Link>
           )}
 
           <button
@@ -63,7 +65,7 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile hamburger */}
+        {/* Mobile Hamburger */}
         <button
           className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-neutral-700 hover:bg-neutral-100"
           aria-label="Toggle menu"
@@ -83,10 +85,11 @@ const Navbar = () => {
       {/* Mobile Menu */}
       <div
         className={`md:hidden overflow-hidden transition-[max-height] duration-300 ease-in-out ${
-          open ? "max-h-40" : "max-h-0"
+          open ? "max-h-[60vh]" : "max-h-0"
         }`}
       >
-        <div className="px-4 sm:px-6 pb-4 flex flex-col gap-3 bg-white/95 backdrop-blur">
+        <div className="px-4 sm:px-6 pb-4 flex flex-col gap-3 bg-white/95 backdrop-blur overflow-y-auto">
+          
           <Link
             to="/home"
             className="py-2 text-neutral-700 hover:text-indigo-600 font-medium"
@@ -103,15 +106,15 @@ const Navbar = () => {
             Profile
           </Link>
 
-          {/* ✅ Mobile view for Admin */}
+          {/* ✅ Mobile Admin only link */}
           {role === "admin" && (
-          <Link
-            to="/home/admin/applications"
-            className="py-2 text-neutral-700 hover:text-indigo-600 font-medium"
-            onClick={() => setOpen(false)}
-          >
-            Applications
-          </Link>
+            <Link
+              to="/home/admin/applications"
+              className="py-2 text-neutral-700 hover:text-indigo-600 font-medium"
+              onClick={() => setOpen(false)}
+            >
+              Applications
+            </Link>
           )}
 
           <button
