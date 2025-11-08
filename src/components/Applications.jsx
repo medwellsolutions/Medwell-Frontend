@@ -31,7 +31,7 @@ const Applications = () => {
         fetchData();
     }, [])
     const handleView = (applicant)=>{
-        navigate(`/admin/application/${applicant._id}`)
+        navigate(`/home/admin/application/${applicant._id}`)
     }
   return (
     <div className="flex justify-center items-center min-h-[80vh] py-8">
