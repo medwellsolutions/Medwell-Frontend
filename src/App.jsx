@@ -15,6 +15,10 @@ import MonthlyEvents from './components/MonthlyEvents';
 import Profile from './components/Profile';
 import appStore from './utils/appStore';
 import { Provider } from 'react-redux';
+import CreateEvent from './components/CreateEvent';
+import EventPage from './components/EventPage';
+import EventStepPage from './components/EventStepPage';
+import CreateEventOldVersion from './components/CreateEventOldVersion'
 
 function App() {
 
@@ -34,10 +38,13 @@ function App() {
         <Route path = '/' element = {<Login/>} />
           <Route path='/home' element={<Home />}>
            <Route index element={<MonthlyEvents />} />
+           <Route path="event/:eventId" element={<EventPage />} />
+           <Route path="event/:eventId/step/:stepNumber" element={<EventStepPage />} />
            <Route path="activity/:eventId" element={<ActivityUpload />} />
            <Route path="profile" element={<Profile />} />
            <Route path = 'admin/applications' element = {<Applications/>}></Route>
-          <Route path = 'admin/application/:id' element = {<ViewApplication/>}></Route>
+           <Route path = 'admin/application/:id' element = {<ViewApplication/>}></Route>
+           <Route path = 'admin/createEvent' element = {<CreateEvent/>}></Route>
           </Route>
           <Route path = 'doctor/register' element = {<DoctorRegister/>}></Route>
           <Route path = '/supplier/register/' element = {<SupplierRegister/>}></Route>
