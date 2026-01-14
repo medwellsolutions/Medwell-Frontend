@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
-import { uploadFileToS3 } from "../utils/S3Upload"; // ⬅️ adjust path if needed
+import { uploadFileToS3 } from "../utils/S3Upload";
+import { useSelector } from "react-redux";
 
 const EventStepPage = () => {
   const { eventId, stepNumber } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // ✅ Auth check
+  const user = useSelector((store) => store.user?.data);
 
   // Try to read event from router state first
   const eventFromState = location.state?.event || null;
@@ -26,8 +31,19 @@ const EventStepPage = () => {
 
   const currentStepNum = Number(stepNumber) || 1;
 
+  // ✅ Redirect to login if user not present
+  useEffect(() => {
+    if (!user) {
+      navigate("/login", {
+        state: { from: location.pathname },
+        replace: true,
+      });
+    }
+  }, [user, navigate, location.pathname]);
+
   useEffect(() => {
     // If we already have the event from state, no need to fetch
+    if (!user) return; // ✅ don't fetch event until user exists
     if (eventFromState) return;
 
     const loadEvent = async () => {
@@ -45,7 +61,10 @@ const EventStepPage = () => {
     };
 
     loadEvent();
-  }, [eventId, eventFromState]);
+  }, [eventId, eventFromState, user]);
+
+  // ✅ Avoid flashing content before redirect
+  if (!user) return null;
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
   if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
@@ -84,7 +103,6 @@ const EventStepPage = () => {
       // 1) If a file is chosen, upload to S3 first
       if (proofFile) {
         proofImageUrl = await uploadFileToS3(proofFile, setUploadProgress);
-        // proofImageUrl is the S3 URL returned by backend
       }
 
       // 2) Prepare payload for EventSubmission
@@ -97,9 +115,11 @@ const EventStepPage = () => {
       };
 
       // 3) POST to backend
-      const { data } = await axios.post(`${BASE_URL}/activity/submission`, payload, {
-        withCredentials: true, // so user comes from cookie / token
-      });
+      const { data } = await axios.post(
+        `${BASE_URL}/activity/submission`,
+        payload,
+        { withCredentials: true }
+      );
 
       console.log("Submission response:", data);
 
@@ -198,7 +218,7 @@ const EventStepPage = () => {
                       <div className="flex-1">
                         <Link
                           to={`/home/event/${eventId}/step/${step.stepNumber}`}
-                          state={{ event }} // keep passing event
+                          state={{ event }}
                         >
                           <p
                             className={
@@ -261,7 +281,7 @@ const EventStepPage = () => {
                 </section>
               ))}
 
-              {/* FINAL STEP: Generic Upload Proof + Experience */}
+              {/* FINAL STEP */}
               {isFinalStep && (
                 <div className="mt-10 p-6 border rounded-xl bg-gray-50 shadow-sm space-y-4">
                   <h3 className="text-xl font-semibold">
@@ -276,7 +296,6 @@ const EventStepPage = () => {
                     impact of your actions.
                   </p>
 
-                  {/* File Input */}
                   <div className="mt-4">
                     <label className="block text-sm font-medium mb-1">
                       Upload photo or screenshot
@@ -289,7 +308,6 @@ const EventStepPage = () => {
                     />
                   </div>
 
-                  {/* Preview */}
                   {proofFile && (
                     <div className="my-4">
                       <p className="font-medium mb-2 text-sm">Preview:</p>
@@ -301,14 +319,12 @@ const EventStepPage = () => {
                     </div>
                   )}
 
-                  {/* Upload progress */}
                   {uploadProgress > 0 && uploadProgress < 100 && (
                     <p className="text-sm text-gray-600">
                       Uploading: {uploadProgress}%
                     </p>
                   )}
 
-                  {/* Social link (optional) */}
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Link to your social media post
@@ -326,7 +342,6 @@ const EventStepPage = () => {
                     </p>
                   </div>
 
-                  {/* Experience Text (REQUIRED) */}
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Tell us about your experience (required)
@@ -344,7 +359,6 @@ const EventStepPage = () => {
                     </p>
                   </div>
 
-                  {/* Submit Button */}
                   <div className="flex justify-end">
                     <button
                       onClick={handleProofUpload}
@@ -355,21 +369,17 @@ const EventStepPage = () => {
                           : "hover:bg-neutral-800"
                       }`}
                     >
-                      {submitting
-                        ? "Submitting..."
-                        : "Submit & Complete Event"}
+                      {submitting ? "Submitting..." : "Submit & Complete Event"}
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* NEXT STEP BUTTON (hidden on last step) */}
+              {/* NEXT STEP BUTTON */}
               {hasNext && (
                 <div className="mt-8 flex justify-end">
                   <Link
-                    to={`/home/event/${eventId}/step/${
-                      currentStep.stepNumber + 1
-                    }`}
+                    to={`/home/event/${eventId}/step/${currentStep.stepNumber + 1}`}
                     state={{ event }}
                   >
                     <button className="bg-black text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-neutral-800 transition">

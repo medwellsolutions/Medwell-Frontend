@@ -3,7 +3,7 @@ import React from "react";
 const ContactUs = () => {
   return (
     <footer
-      id="contact"
+      id="contactUs"
       className="bg-neutral-800 text-neutral-200 py-16"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-10 sm:grid-cols-2 lg:grid-cols-2">

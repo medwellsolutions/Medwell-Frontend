@@ -37,11 +37,8 @@ const Header = () => {
         {/* Top row: Search / Help / Contact */}
         <div className="flex justify-end items-center py-[1px]">
           <nav className="flex items-center gap-6 text-sm font-medium text-slate-500 leading-tight">
-            <button className="flex items-center gap-2 hover:text-slate-700">
-              🔍 <span>Search</span>
-            </button>
             <button className="hover:text-slate-700">Help</button>
-            <button className="hover:text-slate-700">Contact</button>
+            <a href="#contactUs" className="hover:text-slate-700">Contact</a>
           </nav>
         </div>
 
@@ -87,7 +84,6 @@ const Header = () => {
         {/* Utilities */}
         <div className="px-4 h-12 flex justify-end items-center bg-white">
           <div className="flex gap-6 text-sm font-medium text-slate-500">
-            <button className="hover:text-slate-700">Search</button>
             <button className="hover:text-slate-700">Help</button>
             <button className="hover:text-slate-700">Contact</button>
           </div>
