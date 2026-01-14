@@ -28,12 +28,13 @@ const BecomeVolunteer = () => {
         </h2>
 
         <p className="mx-auto mt-4 max-w-3xl text-base sm:text-lg lg:text-xl text-neutral-200">
-          Sodales ut eu sem integer vitae. Porttitor leo a diam sollicitudin
-          tempor id eu nisl nunc. Ac felis donec et odio.
-        </p>
+  Join hands with a growing community committed to improving health, spreading awareness,
+  and creating real impact through meaningful action.
+</p>
+
 
         <a
-          onClick={()=>{login()}}
+          onClick={login}
           className="
             mt-8 inline-flex items-center justify-center
             rounded-full px-8 py-4

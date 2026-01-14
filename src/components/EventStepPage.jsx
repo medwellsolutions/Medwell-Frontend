@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
+import { uploadFileToS3 } from "../utils/S3Upload"; // ⬅️ adjust path if needed
 
 const EventStepPage = () => {
   const { eventId, stepNumber } = useParams();
@@ -18,6 +19,10 @@ const EventStepPage = () => {
   const [proofFile, setProofFile] = useState(null);
   const [socialLink, setSocialLink] = useState("");
   const [experience, setExperience] = useState("");
+
+  // Submission + upload state
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const currentStepNum = Number(stepNumber) || 1;
 
@@ -55,13 +60,11 @@ const EventStepPage = () => {
   const lastStepNumber =
     steps.length > 0 ? Math.max(...steps.map((s) => s.stepNumber)) : 1;
 
-  const hasNext =
-    currentStep && currentStep.stepNumber < lastStepNumber;
+  const hasNext = currentStep && currentStep.stepNumber < lastStepNumber;
 
-  const isFinalStep =
-    currentStep && currentStep.stepNumber === lastStepNumber;
+  const isFinalStep = currentStep && currentStep.stepNumber === lastStepNumber;
 
-  // Generic proof handler: require at least photo OR link, AND experience
+  // FINAL STEP: upload proof to S3 + create EventSubmission
   const handleProofUpload = async () => {
     if (!proofFile && !socialLink.trim()) {
       alert("Please upload a photo or provide a social media link as proof.");
@@ -73,18 +76,48 @@ const EventStepPage = () => {
       return;
     }
 
-    console.log("Proof file:", proofFile);
-    console.log("Social link:", socialLink);
-    console.log("Experience text:", experience);
+    try {
+      setSubmitting(true);
 
-    alert(
-      "Thank you! Proof and experience will be wired to the backend in the next phase."
-    );
+      let proofImageUrl = "";
 
-    // Later:
-    // 1. Upload proofFile (if present) to S3
-    // 2. POST { eventId, stepNumber, proofUrl, socialLink, experience } to backend
-    // 3. Mark this step/event completed and award hours/certificates
+      // 1) If a file is chosen, upload to S3 first
+      if (proofFile) {
+        proofImageUrl = await uploadFileToS3(proofFile, setUploadProgress);
+        // proofImageUrl is the S3 URL returned by backend
+      }
+
+      // 2) Prepare payload for EventSubmission
+      const payload = {
+        event: eventId,
+        stepNumber: currentStep.stepNumber,
+        proofImageUrl: proofImageUrl || undefined,
+        socialLink: socialLink.trim() || undefined,
+        experience: experience.trim(),
+      };
+
+      // 3) POST to backend
+      const { data } = await axios.post(`${BASE_URL}/activity/submission`, payload, {
+        withCredentials: true, // so user comes from cookie / token
+      });
+
+      console.log("Submission response:", data);
+
+      alert("Thank you! Your submission has been sent for review.");
+
+      // Optional: reset fields
+      setProofFile(null);
+      setSocialLink("");
+      setExperience("");
+      setUploadProgress(0);
+    } catch (err) {
+      console.error("Error while submitting proof:", err);
+      const msg =
+        err.response?.data?.message || "Failed to submit. Please try again.";
+      alert(msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -268,6 +301,13 @@ const EventStepPage = () => {
                     </div>
                   )}
 
+                  {/* Upload progress */}
+                  {uploadProgress > 0 && uploadProgress < 100 && (
+                    <p className="text-sm text-gray-600">
+                      Uploading: {uploadProgress}%
+                    </p>
+                  )}
+
                   {/* Social link (optional) */}
                   <div>
                     <label className="block text-sm font-medium mb-1">
@@ -308,9 +348,16 @@ const EventStepPage = () => {
                   <div className="flex justify-end">
                     <button
                       onClick={handleProofUpload}
-                      className="bg-black text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-neutral-800 transition"
+                      disabled={submitting}
+                      className={`bg-black text-white px-6 py-2.5 rounded-lg font-semibold transition ${
+                        submitting
+                          ? "opacity-60 cursor-not-allowed"
+                          : "hover:bg-neutral-800"
+                      }`}
                     >
-                      Submit & Complete Event
+                      {submitting
+                        ? "Submitting..."
+                        : "Submit & Complete Event"}
                     </button>
                   </div>
                 </div>

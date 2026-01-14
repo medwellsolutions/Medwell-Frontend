@@ -64,7 +64,7 @@ const EventPage = () => {
 
         <Link
           to={`/home/event/${eventId}/step/1`}
-          state={{ event }}                 // 👈 pass full event object here
+          state={{ event }}                 
           className="absolute bottom-6 right-6 bg-white text-black font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-neutral-200 transition-all"
         >
           Get Started →
@@ -75,22 +75,22 @@ const EventPage = () => {
       {/* INFO ROW (dispersed) */}
       <div className="px-10 py-6 border-b">
         <div className="max-w-6xl flex flex-wrap justify-between gap-y-4 gap-x-10">
-          <div className="min-w-[160px]">
+          <div className="min-w-160px">
             <p className="text-sm font-bold">MONTH:</p>
             <p className="font-bold">{event.month}</p>
           </div>
 
-          <div className="min-w-[160px]">
+          <div className="min-w-160px">
             <p className="text-sm font-bold ">STARTS AT:</p>
             <p className="font-bold">{startDate || "Not specified"}</p>
           </div>
 
-          <div className="min-w-[160px]">
+          <div className="min-w-160px">
             <p className="text-sm font-bold">ENDS AT</p>
             <p className="font-bold">{endDate || "Not specified"}</p>
           </div>
 
-          <div className="min-w-[160px]">
+          <div className="min-w-160px">
             <p className="text-sm font-bold ">
               VOLUNTEER CREDIT:
             </p>
@@ -103,7 +103,7 @@ const EventPage = () => {
             </p>
           </div>
 
-          <div className="min-w-[160px]">
+          <div className="min-w-160px">
             <p className="text-sm font-bold ">
               ESTIMATED TIME TO COMPLETE:
             </p>

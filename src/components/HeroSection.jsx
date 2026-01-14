@@ -1,109 +1,188 @@
-import React, { useState } from "react";
-
-const slides = [
-  {
-    image:
-      "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop",
-    title1: "Help Poor Childrens",
-    title2: "Only From $10",
-    subtitle: "We Are Non-Profit Charity & NGO Organization.",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1509099836639-18ba1795216d?q=80&w=1600&auto=format&fit=crop",
-    title1: "We Are Non-Profit Charity",
-    title2: "& NGO Organization.",
-    subtitle: "",
-  },
-];
+import React, { useEffect, useMemo, useState } from "react";
 
 const HeroSection = () => {
-  const [slideNo, setSlideNo] = useState(0);
-  const changeSlide = (val) => {
-    setSlideNo((crr) => (crr + val + slides.length) % slides.length);
-  };
+  const slides = useMemo(
+    () => [
+      {
+        highlight: "build healthier communities?",
+        caption:
+          "Join health-focused causes, track your impact, and inspire a better tomorrow.",
+      },
+      {
+        highlight: "spread health awareness?",
+        caption:
+          "Take action with simple challenges and share verified impact with your community.",
+      },
+      {
+        highlight: "earn verified volunteer credits?",
+        caption:
+          "Log hours, submit proof, and grow your profile with real-world contributions.",
+      },
+    ],
+    []
+  );
 
-  const s = slides[slideNo];
+  const stories = useMemo(
+    () => [
+      {
+        title: "Aanya hosted a hygiene drive",
+        desc: "and helped distribute essentials to families in need.",
+      },
+      {
+        title: "Arjun completed a mental wellness challenge",
+        desc: "and encouraged 30+ friends to participate too.",
+      },
+      {
+        title: "Sana logged 12 volunteer hours",
+        desc: "supporting a local nonprofit health camp.",
+      },
+    ],
+    []
+  );
+
+  const [index, setIndex] = useState(0);
+  const [animKey, setAnimKey] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setIndex((prev) => (prev + 1) % slides.length);
+      setAnimKey((k) => k + 1);
+    }, 4200);
+    return () => clearInterval(t);
+  }, [slides.length]);
+
+  const active = slides[index];
+  const activeStory = stories[index % stories.length];
 
   return (
-    <section className="relative">
-      {/* Responsive height: a bit shorter on phones, taller on md+ */}
-      <div className="relative h-[58vh] sm:h-[62vh] md:h-[72vh] lg:h-[78vh]">
-        <img
-          src={s.image}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700"
-        />
-        {/* Slightly stronger overlay on small screens for readability */}
-        <div className="absolute inset-0 bg-black/45 sm:bg-black/40" />
+    <section className="w-full bg-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          {/* LEFT */}
+          <div>
+            <h1 className="font-extrabold tracking-tight leading-[1.05]">
+              <span className="block text-4xl sm:text-5xl lg:text-6xl text-blue-700">
+                Want to
+              </span>
 
-        <div className="relative z-10 h-full">
-          <div className="mx-auto max-w-7xl h-full px-4 sm:px-6 lg:px-8 flex items-center">
-            <div className="max-w-2xl text-white">
-              {/* Fluid, responsive title sizing with tighter leading on mobile */}
-              <h1 className="font-extrabold leading-tight text-[clamp(1.9rem,6vw,3.75rem)] md:text-6xl">
-                <span className="block">{s.title1}</span>
-                <span className="block">
-                  {s.title2.replace("$10", "")}
-                  <span className="text-orange-400">$10</span>
-                </span>
-              </h1>
-
-              {s.subtitle && (
-                <p className="mt-3 sm:mt-4 text-base sm:text-lg text-neutral-200">
-                  {s.subtitle}
-                </p>
-              )}
-
-              <a
-                className="mt-5 sm:mt-6 inline-flex items-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base"
+              {/* Rotating line ONLY */}
+              <span
+                key={animKey}
+                className="block text-4xl sm:text-5xl lg:text-6xl text-blue-500 animate-[fadeSlideIn_.45s_ease-out]"
               >
-                Getting Started
+                {active.highlight}
+              </span>
+
+              <span className="block text-4xl sm:text-5xl lg:text-6xl text-blue-700">
+                We’ll help you do it!
+              </span>
+            </h1>
+
+            {/* Rotating caption ONLY */}
+            <p className="mt-6 text-base sm:text-lg text-sky-600 max-w-xl">
+              {active.caption}
+            </p>
+
+            {/* ✅ STATIC CTA BUTTONS (do NOT change) */}
+            <div className="mt-8 flex flex-wrap gap-4">
+              <a
+                href="#causes"
+                className="inline-flex items-center justify-center px-7 py-4 rounded-xl bg-blue-700 text-white font-semibold hover:bg-blue-800 transition"
+              >
+                Start taking action →
               </a>
+            </div>
+
+            <p className="mt-4 text-sm text-sky-600">
+              Track your impact • Build your profile • Create a better tomorrow
+            </p>
+          </div>
+
+          {/* RIGHT */}
+          <div className="relative">
+            <div className="absolute -inset-6 rounded-3xl bg-blue-50" />
+
+            <div className="relative p-6 sm:p-8">
+              <div className="bg-blue-700 text-white rounded-2xl p-6 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-blue-100">
+                      Impact spotlight
+                    </p>
+                    <h3 className="mt-2 text-xl font-bold">
+                      {activeStory.title}
+                    </h3>
+                  </div>
+
+                  <div className="flex gap-2 mt-1">
+                    {slides.map((_, i) => (
+                      <span
+                        key={i}
+                        className={`h-2 w-2 rounded-full ${
+                          i === index ? "bg-white" : "bg-blue-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5 rounded-xl bg-blue-800/60 p-6 text-white">
+                  <p className="text-sm text-blue-100">{activeStory.desc}</p>
+                  <p className="mt-3 text-xs text-blue-200">
+                    Verified on Medwell • Community-driven
+                  </p>
+                </div>
+
+                <div className="mt-5 flex items-center justify-between">
+                  <button
+                    className="text-blue-100 hover:text-white transition"
+                    onClick={() => {
+                      const next = (index - 1 + slides.length) % slides.length;
+                      setIndex(next);
+                      setAnimKey((k) => k + 1);
+                    }}
+                    aria-label="Previous"
+                    type="button"
+                  >
+                    ←
+                  </button>
+
+                  <button
+                    className="text-blue-100 hover:text-white transition"
+                    onClick={() => {
+                      const next = (index + 1) % slides.length;
+                      setIndex(next);
+                      setAnimKey((k) => k + 1);
+                    }}
+                    aria-label="Next"
+                    type="button"
+                  >
+                    →
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-xl bg-blue-900 text-white px-6 py-4">
+                <p className="text-sm text-blue-100">
+                  Join thousands of people taking health actions with Medwell.
+                </p>
+                <a href="#impact" className="text-sm font-semibold underline">
+                  Learn more about impact →
+                </a>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Left arrow (bigger tap target on mobile, slightly inset) */}
-        <button
-          onClick={() => changeSlide(-1)}
-          aria-label="Prev"
-          className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/75 hover:bg-white p-2 sm:p-2.5 z-20 shadow"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            className="stroke-neutral-800"
-            fill="none"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
-
-        {/* Right arrow */}
-        <button
-          onClick={() => changeSlide(1)}
-          aria-label="Next"
-          className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/75 hover:bg-white p-2 sm:p-2.5 z-20 shadow"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            className="stroke-neutral-800"
-            fill="none"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </button>
       </div>
+
+      <style>
+        {`
+          @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0px); }
+          }
+        `}
+      </style>
     </section>
   );
 };

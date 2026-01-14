@@ -1,80 +1,165 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { BASE_URL } from "../utils/constants";
+import { Link } from "react-router-dom";
 
-const campaigns = [
-  { id: 1, title: "Childrens", image: "https://images.unsplash.com/photo-1509099836639-18ba1795216d?q=80&w=1400&auto=format&fit=crop", raised: 560, goal: 200000, donors: 7, percent: 0.28 },
-  { id: 2, title: "Food", image: "https://www.sos-childrensvillages.org/getmedia/89afa257-6362-40a2-a561-3f57b368726f/Day-of-the-African-Child_600x300.jpg?width=600&height=300&ext=.jpg", raised: 305, goal: 150000, donors: 5, percent: 0.2 },
-  { id: 3, title: "Education", image: "https://images.squarespace-cdn.com/content/v1/58e26c28893fc0a495c5e7d8/35c292b2-4466-41c1-b210-5658071f6ac1/Photo+1_Africa+Day+blog_header.png", raised: 0, goal: 1000, donors: 0, percent: 0.0 },
-];
-
-const currency = (n) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
-
+/**
+ * LandingCampaignsPreview
+ * - Shows ONLY first 3 events (no filters, no extra icons)
+ * - DoSomething-like section heading + 3 cards
+ * - Medwell theme:
+ *   - Main heading: blue
+ *   - Content: light blue
+ *   - Slightly funky (subtle border/offset frame), not overdone
+ */
 const Campaigns = () => {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const currentMonth = useMemo(
+    () => new Date().toLocaleString("default", { month: "long" }),
+    []
+  );
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await axios.get(`${BASE_URL}/events/${currentMonth}`, {
+          withCredentials: true,
+        });
+
+        // Only first 3
+        const firstThree = Array.isArray(res.data) ? res.data.slice(0, 3) : [];
+        setEvents(firstThree);
+      } catch (err) {
+        console.error("Error fetching events:", err);
+        setError("Failed to load campaigns. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [currentMonth]);
+
+  if (loading) {
+    return (
+      <section className="bg-blue-50 py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sky-600 font-medium">
+            Loading campaigns...
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="bg-blue-50 py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-red-600 font-medium">{error}</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section id = 'campaigns'
-      className="
-        relative isolate
-        bg-center bg-cover bg-no-repeat
-        pt-16 sm:pt-20 lg:pt-24 pb-10
-      "
-      style={{
-        backgroundImage:
-          'url("https://nbcnews.shorthandstories.com/mica-mined-madagascar/assets/vnxvjPUGHZ/opener-1920x1080.jpeg")',
-      }}
-    >
-      {/* dark overlay behind everything */}
-      <div className="absolute inset-0 -z-10 bg-black/45" />
+    <section id="causes" className="bg-blue-50 py-14">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Heading (DoSomething-ish) */}
+        <div className="text-center max-w-3xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-blue-700">
+            CREATING A HEALTHIER TOMORROW
+          </h2>
+          <p className="mt-3 text-base sm:text-lg text-sky-600">
+            Take part in meaningful health causes and turn awareness into real-world impact.
+          </p>
+        </div>
 
-      {/* headline */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center text-white">
-        <h2 className="font-extrabold tracking-wide text-3xl sm:text-4xl lg:text-5xl">
-          LATEST CAMPAIGN
-        </h2>
-        <p className="mt-4 text-lg sm:text-xl text-neutral-200">
-          Quis vel eros donec ac odio tempor orci. Urna condimentum mattis pellentesque id nibh tortor id aliquet.
-        </p>
-      </div>
+        {/* Cards */}
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+          {events.map((event, i) => (
+            <div key={event._id} className="relative">
+              {/* subtle funky offset frame */}
+              <div
+                className={`absolute -inset-2 rounded-3xl border-2 border-blue-200 ${
+                  i === 1 ? "rotate-[1.2deg]" : "rotate-[-1deg]"
+                }`}
+              />
+              <div className="relative rounded-3xl overflow-hidden bg-white border border-blue-200 shadow-sm hover:shadow-md transition">
+                {/* Image */}
+                <div className="relative">
+                  <img
+                    src={event.imageUrl}
+                    alt={event.name}
+                    className="w-full h-56 object-cover"
+                    loading="lazy"
+                  />
 
-      {/* cards */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-10">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {campaigns.map((c) => (
-            <article
-              key={c.id}
-              className="bg-white rounded-md shadow-md overflow-hidden backdrop-blur"
-            >
-              <div className="relative">
-                <img src={c.image} alt={c.title} className="h-56 w-full object-cover" />
-                <span className="absolute left-3 -bottom-3 inline-block bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded">
-                  {(c.percent).toFixed(2)}%
-                </span>
-              </div>
-
-              <div className="p-6">
-                <h3 className="text-2xl font-semibold text-neutral-800">{c.title}</h3>
-
-                <button className="mt-6 inline-flex items-center rounded-md bg-orange-500 px-5 py-3 text-white font-semibold hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400">
-                  DONATE NOW
-                </button>
-
-                <div className="my-6 h-px w-full bg-neutral-200" />
-
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-sm text-neutral-500">Raised</p>
-                    <p className="font-semibold text-orange-600">{currency(c.raised)}</p>
+                  {/* label chip (blue bg + white text rule) */}
+                  <div className="absolute bottom-3 left-3">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-700 text-white text-xs font-semibold">
+                      CAMPAIGN
+                    </span>
                   </div>
-                  <div>
-                    <p className="text-sm text-neutral-500">Goal</p>
-                    <p className="font-semibold text-orange-600">{currency(c.goal)}</p>
+                </div>
+
+                {/* Body */}
+                <div className="p-6">
+                  <h3 className="text-2xl font-extrabold text-blue-700">
+                    {event.name}
+                  </h3>
+
+                  <p className="mt-3 text-sky-600 text-sm leading-relaxed line-clamp-4">
+                    {event.caption}
+                  </p>
+
+                  {/* Dates (small, light blue) */}
+                  <div className="mt-4 text-xs text-sky-600">
+                    <p>
+                      <span className="font-semibold text-blue-700">
+                        Starts:
+                      </span>{" "}
+                      {new Date(event.startsAt).toLocaleDateString()}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-blue-700">Ends:</span>{" "}
+                      {new Date(event.endsAt).toLocaleDateString()}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-neutral-500">Donor</p>
-                    <p className="font-semibold text-neutral-800">{c.donors}</p>
+
+                  {/* CTA */}
+                  <div className="mt-6">
+                    <Link to={`/home/event/${event._id}`}>
+                      <button className="w-full rounded-2xl bg-blue-700 text-white font-semibold py-3 hover:bg-blue-800 transition">
+                        Participate →
+                      </button>
+                    </Link>
                   </div>
                 </div>
               </div>
-            </article>
+            </div>
           ))}
+        </div>
+
+        {/* If no events */}
+        {events.length === 0 && (
+          <p className="text-center text-sky-600 mt-10">
+            No featured campaigns found for this month.
+          </p>
+        )}
+
+        {/* Bottom CTA like the screenshot */}
+        <div className="mt-10 flex justify-center">
+          <Link to="/home">
+            <button className="px-10 py-3 rounded-xl bg-blue-900 text-white font-semibold hover:bg-blue-950 transition">
+              Explore More
+            </button>
+          </Link>
         </div>
       </div>
     </section>

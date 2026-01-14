@@ -18,7 +18,8 @@ import { Provider } from 'react-redux';
 import CreateEvent from './components/CreateEvent';
 import EventPage from './components/EventPage';
 import EventStepPage from './components/EventStepPage';
-import CreateEventOldVersion from './components/CreateEventOldVersion'
+import AdminEventSubmissionsPage from './components/AdminEventSubmissionsPage';
+import LandingTemp from './components/LandingTemp';
 
 function App() {
 
@@ -35,7 +36,9 @@ function App() {
     <Provider store = {appStore}>
     <BrowserRouter basename='/'>
       <Routes>
-        <Route path = '/' element = {<Login/>} />
+        {/* <Route path = '/' element = {<Login/>} /> */}
+        <Route path = '/' element = {<LandingTemp/>} />
+          <Route path = '/login' element = {<Login/>} />
           <Route path='/home' element={<Home />}>
            <Route index element={<MonthlyEvents />} />
            <Route path="event/:eventId" element={<EventPage />} />
@@ -45,6 +48,8 @@ function App() {
            <Route path = 'admin/applications' element = {<Applications/>}></Route>
            <Route path = 'admin/application/:id' element = {<ViewApplication/>}></Route>
            <Route path = 'admin/createEvent' element = {<CreateEvent/>}></Route>
+           <Route path = 'admin/review/eventSubmissions' element = {<AdminEventSubmissionsPage/>}></Route>
+
           </Route>
           <Route path = 'doctor/register' element = {<DoctorRegister/>}></Route>
           <Route path = '/supplier/register/' element = {<SupplierRegister/>}></Route>
