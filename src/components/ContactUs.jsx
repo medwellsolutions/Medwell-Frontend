@@ -18,10 +18,10 @@ const ContactUs = () => {
             or any questions about our health initiatives.
           </p>
           <ul className="space-y-3 text-sm">
-            <li className="flex items-start gap-2">
+            {/* <li className="flex items-start gap-2">
               <span className="text-blue-400">📍</span>
               175 5th Ave, New York, NY 10010
-            </li>
+            </li> */}
             <li className="flex items-start gap-2">
               <span className="text-blue-400">📞</span>
               (+1) 928-270-1243
