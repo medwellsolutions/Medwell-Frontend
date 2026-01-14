@@ -172,7 +172,7 @@ const AdminEventSubmissionsPage = () => {
           <select
             value={selectedEvent}
             onChange={(e) => setSelectedEvent(e.target.value)}
-            className="border px-3 py-2 rounded-lg text-sm min-w-[240px]"
+            className="border px-3 py-2 rounded-lg text-sm min-w-240px"
           >
             <option value="">All Events</option>
             {eventOptions.map(([id, label]) => (

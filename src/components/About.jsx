@@ -13,7 +13,7 @@ const About = () => {
         {/* Left Image (CEO) */}
         <div className="flex justify-center md:justify-start">
           <div className="relative">
-            <div className="absolute -inset-3 rounded-3xl border-2 border-blue-200 rotate-[-1deg]" />
+            <div className="absolute -inset-3 rounded-3xl border-2 border-blue-200 rotate-1deg" />
             <img
               src={ceoImage}
               alt="Medwell CEO"

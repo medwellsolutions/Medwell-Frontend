@@ -87,7 +87,7 @@ const Campaigns = () => {
               {/* subtle funky offset frame */}
               <div
                 className={`absolute -inset-2 rounded-3xl border-2 border-blue-200 ${
-                  i === 1 ? "rotate-[1.2deg]" : "rotate-[-1deg]"
+                  i === 1 ? "rotate-[1.2deg]" : "rotate-1deg"
                 }`}
               />
               <div className="relative rounded-3xl overflow-hidden bg-white border border-blue-200 shadow-sm hover:shadow-md transition">
