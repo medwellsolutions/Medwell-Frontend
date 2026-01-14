@@ -35,7 +35,7 @@ const Header = () => {
         </div>
 
         {/* Top row: Search / Help / Contact */}
-        <div className="flex justify-end items-center py-1px">
+        <div className="flex justify-end items-center py-[1px]">
           <nav className="flex items-center gap-6 text-sm font-medium text-slate-500 leading-tight">
             <button className="flex items-center gap-2 hover:text-slate-700">
               🔍 <span>Search</span>
@@ -46,7 +46,7 @@ const Header = () => {
         </div>
 
         {/* Bottom row: ONLY Login */}
-        <div className="flex justify-end items-center py-2px">
+        <div className="flex justify-end items-center py-[2px]">
           <nav className="flex items-center gap-8 text-[15px] font-medium text-neutral-700 leading-tight">
             <button
               onClick={handleLogin}
