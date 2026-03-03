@@ -9,7 +9,6 @@ import SupplierRegister from './components/SupplierRegister';
 import NonProfitRegister from './components/NonProfitRegister';
 import SponsorRegister from './components/SponsorRegister';
 import DoctorRegister from './components/DoctorRegister';
-import ActivityUpload from './components/ActivityUpload';
 import MediaViewer from './components/MediaViewer';
 import MonthlyEvents from './components/MonthlyEvents';
 import Profile from './components/Profile';
@@ -20,6 +19,8 @@ import EventPage from './components/EventPage';
 import EventStepPage from './components/EventStepPage';
 import AdminEventSubmissionsPage from './components/AdminEventSubmissionsPage';
 import LandingTemp from './components/LandingTemp';
+import Leaderboard from './components/Leaderboard';
+import VerifyEmail from './components/verifyEmail';
 
 function App() {
 
@@ -39,12 +40,14 @@ function App() {
         {/* <Route path = '/' element = {<Login/>} /> */}
         <Route path = '/' element = {<LandingTemp/>} />
           <Route path = '/login' element = {<Login/>} />
+          <Route path='/verify-email' element={<VerifyEmail />} />
+
           <Route path='/home' element={<Home />}>
            <Route index element={<MonthlyEvents />} />
            <Route path="event/:eventId" element={<EventPage />} />
            <Route path="event/:eventId/step/:stepNumber" element={<EventStepPage />} />
-           <Route path="activity/:eventId" element={<ActivityUpload />} />
            <Route path="profile" element={<Profile />} />
+           <Route path = "leaderboard" element = {<Leaderboard />}></Route>
            <Route path = 'admin/applications' element = {<Applications/>}></Route>
            <Route path = 'admin/application/:id' element = {<ViewApplication/>}></Route>
            <Route path = 'admin/createEvent' element = {<CreateEvent/>}></Route>

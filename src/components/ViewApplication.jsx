@@ -111,9 +111,7 @@ const FileChip = ({ fileId, label }) => {
   if (!fileId) return <span className="text-gray-400">—</span>;
   return (
     <div className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3">
-      <div className="text-xs font-medium text-gray-700">
-        {label || "File"}
-      </div>
+      <div className="text-xs font-medium text-gray-700">{label || "File"}</div>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -167,13 +165,20 @@ const RenderValue = ({ value, k }) => {
     return <span className="text-gray-400">—</span>;
   }
 
-  // If this value itself is a file-shaped object { fileId, ... }
-  if (typeof value === "object" && !Array.isArray(value) && "fileId" in value && isHex24(value.fileId)) {
+  if (
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    "fileId" in value &&
+    isHex24(value.fileId)
+  ) {
     return <FileChip fileId={value.fileId} label={k} />;
   }
 
-  // If primitive-looking file under file-ish key
-  if (typeof value === "string" && isHex24(value) && /file|doc|license|logo|w9|headshot/i.test(k || "")) {
+  if (
+    typeof value === "string" &&
+    isHex24(value) &&
+    /file|doc|license|logo|w9|headshot/i.test(k || "")
+  ) {
     return <FileChip fileId={value} label={k} />;
   }
 
@@ -204,7 +209,10 @@ const KeyValueGrid = ({ obj }) => {
   return (
     <div className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-4">
       {entries.map(([k, v]) => (
-        <div key={k} className="min-w-[240px] rounded-xl border border-gray-100 p-3 overflow-hidden">
+        <div
+          key={k}
+          className="min-w-[240px] rounded-xl border border-gray-100 p-3 overflow-hidden"
+        >
           <div className="text-xs uppercase tracking-wide text-gray-500">{k}</div>
           <div className="mt-1 text-sm text-gray-900 break-words">
             <RenderValue value={v} k={k} />
@@ -215,43 +223,37 @@ const KeyValueGrid = ({ obj }) => {
   );
 };
 
-
 /* ------------------------------ Main ------------------------------ */
 
 const ViewApplication = () => {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { id } = useParams(); // NOTE: this is USER ID for the GET route
+  const { id } = useParams(); // USER ID for the GET route (backend should return latest submission for this user)
+
   const [newStatus, setNewStatus] = useState("");
   const [loadingStatus, setLoadingStatus] = useState(false);
 
-  const handleStatusChange = async () => {
-    if (!newStatus || !details?._id) return;
-    setLoadingStatus(true);
-    try {
-      // PATCH expects the APPLICATION (Details) id
-      await axios.patch(
-        `${BASE_URL}/admin/application/${details._id}/status`,
-        { reviewStatus: newStatus },
-        { withCredentials: true }
-      );
-      setDetails((prev) => ({ ...prev, reviewStatus: newStatus }));
-    } catch (err) {
-      console.error("Failed to update status", err);
-      alert(err?.response?.data?.error || "Failed to update status");
-    } finally {
-      setLoadingStatus(false);
-    }
-  };
+  // ✅ new: award + comment controls
+  const [hoursAwarded, setHoursAwarded] = useState(0);
+  const [pointsAwarded, setPointsAwarded] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // GET expects USER ID and returns the Details doc (with role-specific fields)
         const res = await axios.get(`${BASE_URL}/admin/application/${id}`, {
           withCredentials: true,
         });
-        setDetails(res?.data?.data ?? null);
+        const d = res?.data?.data ?? null;
+        setDetails(d);
+
+        // prefill edit fields
+        if (d) {
+          setNewStatus(d.reviewStatus || "hold");
+          setHoursAwarded(Number(d.hoursAwarded || 0));
+          setPointsAwarded(Number(d.pointsAwarded || 0));
+          setReviewComment(d.reviewComment || "");
+        }
       } catch (err) {
         console.error("Failed to fetch application:", err?.response?.data || err?.message);
         setDetails(null);
@@ -262,7 +264,45 @@ const ViewApplication = () => {
     fetchData();
   }, [id]);
 
-  // Pull out common headers; keep everything else under "rest"
+  const handleStatusChange = async () => {
+    if (!details?._id) return;
+
+    const effectiveStatus = newStatus || details.reviewStatus || "hold";
+
+    if (effectiveStatus === "rejected" && !String(reviewComment).trim()) {
+      alert("Rejection comment is required");
+      return;
+    }
+
+    setLoadingStatus(true);
+    try {
+      await axios.patch(
+        `${BASE_URL}/admin/application/${details._id}/status`,
+        {
+          reviewStatus: effectiveStatus,
+          hoursAwarded: Number(hoursAwarded || 0),
+          pointsAwarded: Number(pointsAwarded || 0),
+          reviewComment: String(reviewComment || ""),
+        },
+        { withCredentials: true }
+      );
+
+      // update local UI
+      setDetails((prev) => ({
+        ...prev,
+        reviewStatus: effectiveStatus,
+        hoursAwarded: effectiveStatus === "accepted" ? Number(hoursAwarded || 0) : 0,
+        pointsAwarded: effectiveStatus === "accepted" ? Number(pointsAwarded || 0) : 0,
+        reviewComment: effectiveStatus === "rejected" ? String(reviewComment || "").trim() : "",
+      }));
+    } catch (err) {
+      console.error("Failed to update status", err);
+      alert(err?.response?.data?.message || "Failed to update status");
+    } finally {
+      setLoadingStatus(false);
+    }
+  };
+
   const {
     _id: applicationId,
     user,
@@ -281,6 +321,9 @@ const ViewApplication = () => {
     if (["hold", "pending", "under review"].includes(s)) return "warning";
     return "neutral";
   }, [reviewStatus]);
+
+  const effectiveStatus = newStatus || reviewStatus || "hold";
+  const canEditAwards = effectiveStatus === "accepted";
 
   if (loading) {
     return (
@@ -310,7 +353,7 @@ const ViewApplication = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Applicant & Role-Specific */}
+        {/* Left */}
         <div className="lg:col-span-2 space-y-6">
           <Section title="Applicant">
             <FieldRow label="User ID">
@@ -330,12 +373,11 @@ const ViewApplication = () => {
           </Section>
 
           <Section title="Role-specific data">
-            {/* This grid renders ALL remaining fields from the discriminator payload */}
             <KeyValueGrid obj={rest} />
           </Section>
         </div>
 
-        {/* Right: Status & timestamps */}
+        {/* Right */}
         <div className="space-y-6">
           <Section title="Status & Timestamps">
             <FieldRow label="Review Status">
@@ -358,6 +400,60 @@ const ViewApplication = () => {
                   {loadingStatus ? "Updating..." : "Update"}
                 </button>
               </div>
+            </FieldRow>
+
+            {/* ✅ NEW: award hours */}
+            <FieldRow label="Hours Awarded">
+              <input
+                type="number"
+                min="0"
+                value={hoursAwarded}
+                onChange={(e) => setHoursAwarded(e.target.value)}
+                disabled={!canEditAwards}
+                className={cn(
+                  "border rounded-md text-sm px-2 py-1 w-32",
+                  !canEditAwards && "opacity-50 cursor-not-allowed"
+                )}
+              />
+              {!canEditAwards && (
+                <span className="ml-2 text-xs text-gray-500">
+                  Set status to Accepted to award hours
+                </span>
+              )}
+            </FieldRow>
+
+            {/* ✅ NEW: award points */}
+            <FieldRow label="Points Awarded">
+              <input
+                type="number"
+                min="0"
+                value={pointsAwarded}
+                onChange={(e) => setPointsAwarded(e.target.value)}
+                disabled={!canEditAwards}
+                className={cn(
+                  "border rounded-md text-sm px-2 py-1 w-32",
+                  !canEditAwards && "opacity-50 cursor-not-allowed"
+                )}
+              />
+            </FieldRow>
+
+            {/* ✅ NEW: review comment */}
+            <FieldRow label="Review Comment">
+              <textarea
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                rows={3}
+                placeholder="Required if rejecting"
+                className={cn(
+                  "border rounded-md text-sm px-2 py-1 w-full",
+                  effectiveStatus !== "rejected" && "opacity-80"
+                )}
+              />
+              {effectiveStatus === "rejected" && !String(reviewComment).trim() ? (
+                <div className="mt-1 text-xs text-rose-600">
+                  Comment required for rejection
+                </div>
+              ) : null}
             </FieldRow>
 
             <FieldRow label="Created At">{formatDate(createdAt)}</FieldRow>
