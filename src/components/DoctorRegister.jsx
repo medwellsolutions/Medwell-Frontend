@@ -29,68 +29,164 @@ const CAMPAIGN_FIT_OPTIONS = [
   "Chronic Care Management",
 ];
 
-/* ---------- Tiny UI helpers ---------- */
-const CL = {
-  input:
-    "w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white",
-  label: "block text-sm font-semibold text-gray-900 mb-1",
-  card: "bg-white p-6 rounded-xl shadow mb-6",
-  h3: "text-lg font-bold text-gray-900 mb-3",
-  file:
-    "block w-full text-sm text-gray-900 bg-white border border-gray-300 rounded-md cursor-pointer focus:outline-none " +
-    "file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold " +
-    "file:bg-blue-600 file:text-white hover:file:bg-blue-700",
-};
-const Section = ({ title, children }) => (
-  <section className={CL.card}>
-    <h3 className={CL.h3}>{title}</h3>
-    <div className="space-y-3">{children}</div>
-  </section>
+/* ---------- UI helpers (Medwell white + red) ---------- */
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white border border-gray-200 rounded-3xl shadow-xl ${className}`}>
+    {children}
+  </div>
 );
-const TextField = ({ label, value, onChange, textarea = false, rows = 3 }) => (
+
+const Section = ({ title, children }) => (
+  <div className="bg-white border border-gray-200 rounded-3xl shadow-sm p-6">
+    <h3 className="text-lg font-bold text-gray-900 mb-3">{title}</h3>
+    <div className="space-y-4">{children}</div>
+  </div>
+);
+
+const Label = ({ children }) => (
+  <span className="block text-sm font-semibold text-gray-700 mb-1">
+    {children}
+  </span>
+);
+
+const Input = (props) => (
+  <input
+    {...props}
+    className={[
+      "w-full border border-gray-200 rounded-xl px-4 h-11",
+      "bg-white",
+      "focus:outline-none focus:ring-2 focus:ring-[#e13429]/30",
+      props.className || "",
+    ].join(" ")}
+  />
+);
+
+const TextArea = (props) => (
+  <textarea
+    {...props}
+    className={[
+      "w-full border border-gray-200 rounded-xl px-4 py-3",
+      "bg-white",
+      "focus:outline-none focus:ring-2 focus:ring-[#e13429]/30",
+      props.className || "",
+    ].join(" ")}
+  />
+);
+
+const FileInput = ({ label, accept, onChange }) => (
   <div>
-    <label className={CL.label}>{label}</label>
+    <Label>{label}</Label>
+    <input
+      type="file"
+      accept={accept}
+      onChange={onChange}
+      className="w-full border border-gray-200 rounded-xl px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+    />
+  </div>
+);
+
+const TextField = ({
+  label,
+  value,
+  onChange,
+  textarea = false,
+  rows = 3,
+  placeholder = "",
+}) => (
+  <div>
+    <Label>{label}</Label>
     {textarea ? (
-      <textarea className={CL.input} rows={rows} value={value} onChange={onChange} />
+      <TextArea
+        rows={rows}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+      />
     ) : (
-      <input className={CL.input} value={value} onChange={onChange} />
+      <Input value={value} onChange={onChange} placeholder={placeholder} />
     )}
   </div>
 );
-const FileInput = ({ label, accept, onChange }) => (
-  <div>
-    <label className={CL.label}>{label}</label>
-    <input type="file" accept={accept} onChange={onChange} className={CL.file} />
-  </div>
-);
+
 const CheckboxGroup = ({ options, value, onChange }) => {
   const toggle = (opt) =>
     onChange(value.includes(opt) ? value.filter((v) => v !== opt) : [...value, opt]);
+
   return (
     <div className="space-y-2">
       {options.map((opt) => (
-        <label key={opt} className="flex gap-2 text-sm text-gray-900">
+        <label key={opt} className="flex items-start gap-3 text-sm">
           <input
             type="checkbox"
-            className="accent-blue-600"
+            className="mt-0.5 h-4 w-4 accent-[#e13429]"
             checked={value.includes(opt)}
             onChange={() => toggle(opt)}
           />
-          {opt}
+          <span className="text-gray-800">{opt}</span>
         </label>
       ))}
     </div>
   );
 };
+
+const Alert = ({ type = "error", children }) => {
+  const styles =
+    type === "success"
+      ? "border-green-200 bg-green-50 text-green-700"
+      : "border-red-200 bg-red-50 text-red-700";
+
+  return (
+    <div className={`rounded-2xl border px-4 py-3 text-sm ${styles}`}>
+      {children}
+    </div>
+  );
+};
+
+const PrimaryButton = ({ children, disabled, ...rest }) => (
+  <button
+    {...rest}
+    disabled={disabled}
+    className={[
+      "w-full h-12 rounded-full font-medium text-white",
+      "bg-[#e13429] hover:bg-[#c62d23] transition shadow-md",
+      disabled ? "opacity-60 cursor-not-allowed hover:bg-[#e13429]" : "",
+    ].join(" ")}
+  >
+    {children}
+  </button>
+);
+
+const GhostIconButton = ({ children, ...rest }) => (
+  <button
+    {...rest}
+    type="button"
+    className="h-11 w-11 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition inline-flex items-center justify-center"
+  >
+    {children}
+  </button>
+);
+
+const LinkButton = ({ children, ...rest }) => (
+  <button
+    {...rest}
+    type="button"
+    className="text-sm font-medium text-[#e13429] hover:text-[#c62d23] transition"
+  >
+    {children}
+  </button>
+);
+
 const SocialLinks = ({ links, setLinks }) => (
   <div>
-    <label className={CL.label}>
-      Social Links <span className="text-xs text-gray-600">(https:// required)</span>
-    </label>
+    <Label>
+      Social Links{" "}
+      <span className="text-xs font-normal text-gray-500">(https:// required)</span>
+    </Label>
+
     {links.map((l, i) => (
       <div key={i} className="flex gap-2 mb-2">
-        <input
-          className={CL.input}
+        <Input
           placeholder="https://example.com"
           value={l}
           onChange={(e) => {
@@ -100,23 +196,14 @@ const SocialLinks = ({ links, setLinks }) => (
           }}
         />
         {links.length > 1 && (
-          <button
-            type="button"
-            className="px-2 py-1 text-sm text-red-500"
-            onClick={() => setLinks(links.filter((_, x) => x !== i))}
-          >
-            ×
-          </button>
+          <GhostIconButton onClick={() => setLinks(links.filter((_, x) => x !== i))}>
+            ✕
+          </GhostIconButton>
         )}
       </div>
     ))}
-    <button
-      type="button"
-      className="text-blue-600 text-sm underline"
-      onClick={() => setLinks([...links, ""])}
-    >
-      + Add another link
-    </button>
+
+    <LinkButton onClick={() => setLinks([...links, ""])}>+ Add another link</LinkButton>
   </div>
 );
 
@@ -159,8 +246,7 @@ const DoctorRegister = () => {
       return "Please select at least 5 participation activities.";
     if (campaignFit.length === 0 && customCampaignFit.trim().length === 0)
       return "Please select or add at least one campaign fit.";
-    if (!hipaaAcknowledged)
-      return "Please acknowledge HIPAA before submitting.";
+    if (!hipaaAcknowledged) return "Please acknowledge HIPAA before submitting.";
     return null;
   };
 
@@ -187,17 +273,10 @@ const DoctorRegister = () => {
       if (headshot) formData.append("headshot", headshot);
       formData.append("hipaaAcknowledged", hipaaAcknowledged);
 
-      // participation
-      formData.append(
-        "participationOptions",
-        JSON.stringify(participationOptions)
-      );
-
-      // alignment
+      formData.append("participationOptions", JSON.stringify(participationOptions));
       formData.append("promoteEngagement", promoteEngagement);
       formData.append("meaningfulCauses", meaningfulCauses);
 
-      // campaign fit (merge preset + custom)
       let finalCampaignFit = [...campaignFit];
       if (customCampaignFit.trim()) {
         finalCampaignFit = [
@@ -216,7 +295,8 @@ const DoctorRegister = () => {
       });
 
       setSuccess("Doctor details submitted successfully!");
-    } catch {
+    } catch (e2) {
+      console.error(e2);
       setError("Submission failed. Please check your input.");
     } finally {
       setSubmitting(false);
@@ -224,83 +304,144 @@ const DoctorRegister = () => {
   };
 
   return (
-    <form onSubmit={submit} className="max-w-2xl mx-auto bg-gray-50 p-8 rounded-xl shadow-md mt-10">
-      <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">Doctor Registration</h2>
+    <div className="min-h-screen bg-[#f8fafc] px-4 py-10">
+      <form onSubmit={submit} className="max-w-3xl mx-auto">
+        <Card className="p-6 sm:p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-extrabold text-gray-900">
+              Doctor Registration
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Provide clinic details and select how you want to participate.
+            </p>
+          </div>
 
-      {/* Section 1: Basic Info */}
-      <Section title="Section 1: Clinic Information">
-        <TextField label="Clinic Name" value={clinicName} onChange={(e) => setClinicName(e.target.value)} />
-        <TextField label="Practice Address" value={practiceAddress} onChange={(e) => setPracticeAddress(e.target.value)} />
-        <TextField label="Website" value={website} onChange={(e) => setWebsite(e.target.value)} />
-        <SocialLinks links={socialLinks} setLinks={setSocialLinks} />
-      </Section>
+          <div className="space-y-6">
+            {/* Section 1 */}
+            <Section title="Section 1: Clinic Information">
+              <TextField
+                label="Clinic Name"
+                value={clinicName}
+                onChange={(e) => setClinicName(e.target.value)}
+                placeholder="Clinic / Practice name"
+              />
+              <TextField
+                label="Practice Address"
+                value={practiceAddress}
+                onChange={(e) => setPracticeAddress(e.target.value)}
+                placeholder="Street, City, State"
+              />
+              <TextField
+                label="Website"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://yourclinic.com"
+              />
+              <SocialLinks links={socialLinks} setLinks={setSocialLinks} />
+            </Section>
 
-      {/* Section 2: Compliance & Branding */}
-      <Section title="Section 2: Compliance & Branding">
-        <FileInput label="Business License (PDF/Image)" accept="application/pdf,image/*" onChange={(e) => setBusinessLicense(e.target.files[0])} />
-        <FileInput label="W-9 (PDF/Image)" accept="application/pdf,image/*" onChange={(e) => setW9(e.target.files[0])} />
-        <FileInput label="Logo (Image)" accept="image/*" onChange={(e) => setLogo(e.target.files[0])} />
-        <FileInput label="Headshot (Image)" accept="image/*" onChange={(e) => setHeadshot(e.target.files[0])} />
-        <label className="flex items-center gap-2 text-sm text-gray-900 mt-2">
-          <input
-            type="checkbox"
-            className="accent-blue-600"
-            checked={hipaaAcknowledged}
-            onChange={() => setHipaaAcknowledged((v) => !v)}
-          />
-          HIPAA Acknowledged
-        </label>
-      </Section>
+            {/* Section 2 */}
+            <Section title="Section 2: Compliance & Branding">
+              <FileInput
+                label="Business License (PDF/Image)"
+                accept="application/pdf,image/*"
+                onChange={(e) => setBusinessLicense(e.target.files?.[0] || null)}
+              />
+              <FileInput
+                label="W-9 (PDF/Image)"
+                accept="application/pdf,image/*"
+                onChange={(e) => setW9(e.target.files?.[0] || null)}
+              />
+              <FileInput
+                label="Logo (Image)"
+                accept="image/*"
+                onChange={(e) => setLogo(e.target.files?.[0] || null)}
+              />
+              <FileInput
+                label="Headshot (Image)"
+                accept="image/*"
+                onChange={(e) => setHeadshot(e.target.files?.[0] || null)}
+              />
 
-      {/* Section 3: Participation Options */}
-      <Section title="Section 3: Participation Options (Select at least 5)">
-        <CheckboxGroup
-          options={DOCTOR_PARTICIPATION_OPTIONS}
-          value={participationOptions}
-          onChange={setParticipationOptions}
-        />
-        <div className="text-xs text-gray-600">Selected: {participationOptions.length}/5</div>
-      </Section>
+              <label className="flex items-center gap-3 text-sm mt-2 text-gray-800">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-[#e13429]"
+                  checked={hipaaAcknowledged}
+                  onChange={() => setHipaaAcknowledged((v) => !v)}
+                />
+                <span className="font-medium">HIPAA Acknowledged</span>
+              </label>
+            </Section>
 
-      {/* Section 4: Alignment & Causes */}
-      <Section title="Section 4: Alignment & Causes">
-        <TextField
-          label="How do you currently promote patient engagement or wellness?"
-          value={promoteEngagement}
-          onChange={(e) => setPromoteEngagement(e.target.value)}
-        />
-        <TextField
-          label="What causes or community populations are most meaningful to your practice?"
-          value={meaningfulCauses}
-          onChange={(e) => setMeaningfulCauses(e.target.value)}
-        />
-      </Section>
+            {/* Section 3 */}
+            <Section title="Section 3: Participation Options (Select at least 5)">
+              <CheckboxGroup
+                options={DOCTOR_PARTICIPATION_OPTIONS}
+                value={participationOptions}
+                onChange={setParticipationOptions}
+              />
+              <div className="text-xs text-gray-500">
+                Selected: {participationOptions.length}/5
+              </div>
+            </Section>
 
-      {/* Section 5: Campaign Fit */}
-      <Section title="Section 5: Campaign Fit">
-        <CheckboxGroup options={CAMPAIGN_FIT_OPTIONS} value={campaignFit} onChange={setCampaignFit} />
-        <input
-          className={`${CL.input} mt-2`}
-          placeholder="Add custom cause(s), comma separated"
-          value={customCampaignFit}
-          onChange={(e) => setCustomCampaignFit(e.target.value)}
-        />
-        <div className="text-xs text-gray-600">Select or add at least one.</div>
-      </Section>
+            {/* Section 4 */}
+            <Section title="Section 4: Alignment & Causes">
+              <TextField
+                label="How do you currently promote patient engagement or wellness?"
+                value={promoteEngagement}
+                onChange={(e) => setPromoteEngagement(e.target.value)}
+                textarea
+                rows={4}
+                placeholder="Describe your approach…"
+              />
+              <TextField
+                label="What causes or community populations are most meaningful to your practice?"
+                value={meaningfulCauses}
+                onChange={(e) => setMeaningfulCauses(e.target.value)}
+                textarea
+                rows={4}
+                placeholder="Examples: veterans, diabetes prevention, mental health…"
+              />
+            </Section>
 
-      {error && <div className="text-red-600 mb-3">{error}</div>}
-      {success && <div className="text-green-600 mb-3">{success}</div>}
+            {/* Section 5 */}
+            <Section title="Section 5: Campaign Fit">
+              <CheckboxGroup
+                options={CAMPAIGN_FIT_OPTIONS}
+                value={campaignFit}
+                onChange={setCampaignFit}
+              />
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className={`w-full py-3 rounded-md font-semibold text-white ${
-          submitting ? "bg-blue-300" : "bg-blue-600 hover:bg-blue-700"
-        }`}
-      >
-        {submitting ? "Submitting..." : "Submit"}
-      </button>
-    </form>
+              <div className="mt-3">
+                <Label>
+                  Custom cause(s){" "}
+                  <span className="text-xs font-normal text-gray-500">
+                    (comma separated)
+                  </span>
+                </Label>
+                <Input
+                  placeholder="e.g., blood donation, tobacco cessation"
+                  value={customCampaignFit}
+                  onChange={(e) => setCustomCampaignFit(e.target.value)}
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  Select or add at least one.
+                </p>
+              </div>
+            </Section>
+
+            {error && <Alert type="error">{error}</Alert>}
+            {success && <Alert type="success">{success}</Alert>}
+
+            <PrimaryButton type="submit" disabled={submitting}>
+              {submitting ? "Submitting..." : "Submit"}
+            </PrimaryButton>
+          </div>
+        </Card>
+      </form>
+    </div>
   );
 };
 

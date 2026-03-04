@@ -3,7 +3,6 @@ import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import { uploadFileToS3 } from "../utils/s3Upload";
 
-
 const CreateEvent = () => {
   const [imageFile, setImageFile] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
@@ -60,14 +59,9 @@ const CreateEvent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("CreateEvent submit called", {
-      imageFile,
-      bannerFile,
-      formData,
-    });
+    console.log("CreateEvent submit called", { imageFile, bannerFile, formData });
 
     try {
-      // 1. Upload thumbnail image
       let imageUrl = "";
       if (imageFile) {
         console.log("Uploading THUMBNAIL to S3...");
@@ -77,7 +71,6 @@ const CreateEvent = () => {
         console.warn("No thumbnail image selected");
       }
 
-      // 2. Upload banner image
       let bannerImageUrl = "";
       if (bannerFile) {
         console.log("Uploading BANNER to S3...");
@@ -87,7 +80,6 @@ const CreateEvent = () => {
         console.warn("No banner image selected");
       }
 
-      // 3. Build final payload
       const payload = {
         ...formData,
         imageUrl,
@@ -96,12 +88,9 @@ const CreateEvent = () => {
 
       console.log("Final payload sent to /admin/createevent:", payload);
 
-      // 4. Submit to backend
-      const res = await axios.post(
-        `${BASE_URL}/admin/createevent`,
-        payload,
-        { withCredentials: true }
-      );
+      const res = await axios.post(`${BASE_URL}/admin/createevent`, payload, {
+        withCredentials: true,
+      });
 
       alert("Event created successfully!");
       console.log("CreateEvent response:", res.data);
@@ -120,150 +109,184 @@ const CreateEvent = () => {
     }
   };
 
-  // ... keep the rest of your JSX and sub-components as-is
-
-
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">Create New Event</h1>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* BASIC INFO */}
-        <div>
-          <label>Name</label>
-          <input
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="input"
-          />
+    <div className="min-h-screen bg-[#f8fafc] px-4 py-10">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-6">
+          <h1 className="text-3xl font-extrabold text-gray-900">
+            Create New Event
+          </h1>
+          <p className="mt-1 text-sm text-gray-600">
+            Fill the basics first, then add steps, checklist, requirements and FAQs.
+          </p>
         </div>
 
-        <div>
-          <label>Caption</label>
-          <input
-            name="caption"
-            value={formData.caption}
-            onChange={handleChange}
-            className="input"
-          />
+        <div className="bg-white border border-gray-200 rounded-3xl shadow-xl p-6 sm:p-8">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* BASIC INFO */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <Field label="Name" className="sm:col-span-2">
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+                  placeholder="Event name"
+                />
+              </Field>
+
+              <Field label="Caption" className="sm:col-span-2">
+                <input
+                  name="caption"
+                  value={formData.caption}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+                  placeholder="Short caption for cards"
+                />
+              </Field>
+
+              <Field label="Month" className="sm:col-span-2">
+                <input
+                  name="month"
+                  value={formData.month}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+                  placeholder="e.g., March"
+                />
+              </Field>
+            </div>
+
+            {/* IMAGES */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <Field label="Event Thumbnail">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                />
+                <p className="text-xs text-gray-500 mt-2">Used on campaign cards.</p>
+              </Field>
+
+              <Field label="Event Banner">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+                  onChange={(e) => setBannerFile(e.target.files?.[0] || null)}
+                />
+                <p className="text-xs text-gray-500 mt-2">Used on event detail page.</p>
+              </Field>
+            </div>
+
+            {/* DATE FIELDS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <Field label="Starts At">
+                <input
+                  type="datetime-local"
+                  name="startsAt"
+                  value={formData.startsAt}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+                />
+              </Field>
+
+              <Field label="Ends At">
+                <input
+                  type="datetime-local"
+                  name="endsAt"
+                  value={formData.endsAt}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+                />
+              </Field>
+            </div>
+
+            {/* DESCRIPTIONS */}
+            <div className="grid grid-cols-1 gap-5">
+              <Field label="Short Description">
+                <textarea
+                  name="shortDescription"
+                  value={formData.shortDescription}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+                  rows={3}
+                  placeholder="Shown near the top of event detail"
+                />
+              </Field>
+
+              <Field label="Long Description">
+                <textarea
+                  name="longDescription"
+                  value={formData.longDescription}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+                  rows={5}
+                  placeholder="Full description"
+                />
+              </Field>
+            </div>
+
+            {/* ACTION STEPS */}
+            <ActionSteps
+              items={formData.actionSteps}
+              addItem={(step) => addItem("actionSteps", step)}
+            />
+
+            {/* CHECKLIST */}
+            <ChecklistItems
+              items={formData.checkListItems}
+              addItem={(chk) => addItem("checkListItems", chk)}
+            />
+
+            {/* REQUIREMENTS */}
+            <Requirements
+              items={formData.requirements}
+              addItem={(req) => addItem("requirements", req)}
+            />
+
+            {/* FAQ */}
+            <FAQs items={formData.FAQs} addItem={(faq) => addItem("FAQs", faq)} />
+
+            {/* SUBMIT */}
+            <div className="pt-2 flex flex-col sm:flex-row gap-3 sm:justify-end">
+              <button
+                type="submit"
+                className="h-12 rounded-full px-8 text-white bg-[#e13429] hover:bg-[#c62d23] transition shadow-md"
+              >
+                Create Event
+              </button>
+            </div>
+          </form>
         </div>
-
-        <div>
-          <label>Month</label>
-          <input
-            name="month"
-            value={formData.month}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-
-        {/* IMAGES */}
-        <div>
-          <label>Event Thumbnail</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files[0])}
-          />
-        </div>
-
-        <div>
-          <label>Event Banner</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setBannerFile(e.target.files[0])}
-          />
-        </div>
-
-        {/* DATE FIELDS */}
-        <div>
-          <label>Starts At</label>
-          <input
-            type="datetime-local"
-            name="startsAt"
-            value={formData.startsAt}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label>Ends At</label>
-          <input
-            type="datetime-local"
-            name="endsAt"
-            value={formData.endsAt}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-
-        {/* DESCRIPTIONS */}
-        <div>
-          <label>Short Description</label>
-          <textarea
-            name="shortDescription"
-            value={formData.shortDescription}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label>Long Description</label>
-          <textarea
-            name="longDescription"
-            value={formData.longDescription}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-
-        {/* ACTION STEPS */}
-        <ActionSteps
-          items={formData.actionSteps}
-          addItem={(step) => addItem("actionSteps", step)}
-        />
-
-        {/* CHECKLIST */}
-        <ChecklistItems
-          items={formData.checkListItems}
-          addItem={(chk) => addItem("checkListItems", chk)}
-        />
-
-        {/* REQUIREMENTS */}
-        <Requirements
-          items={formData.requirements}
-          addItem={(req) => addItem("requirements", req)}
-        />
-
-        {/* FAQ */}
-        <FAQs
-          items={formData.FAQs}
-          addItem={(faq) => addItem("FAQs", faq)}
-        />
-
-        {/* SUBMIT BUTTON */}
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-5 py-2 rounded"
-        >
-          Create Event
-        </button>
-      </form>
+      </div>
     </div>
   );
 };
+
+// Small helper for consistent labels
+const Field = ({ label, children, className = "" }) => (
+  <label className={`block ${className}`}>
+    <span className="block text-sm font-medium text-gray-700 mb-1">{label}</span>
+    {children}
+  </label>
+);
 
 // =========================================
 // SUB COMPONENTS
 // =========================================
 
+const SectionCard = ({ title, desc, children }) => (
+  <div className="mt-6 bg-white border border-gray-200 rounded-3xl shadow-sm p-5">
+    <div className="mb-3">
+      <h2 className="font-semibold text-lg text-gray-900">{title}</h2>
+      {desc ? <p className="text-gray-600 text-sm mt-1">{desc}</p> : null}
+    </div>
+    {children}
+  </div>
+);
+
 const ActionSteps = ({ items, addItem }) => {
-  // step-level state
   const [step, setStep] = useState({
     stepNumber: "",
     title: "",
@@ -271,14 +294,12 @@ const ActionSteps = ({ items, addItem }) => {
     contentBlocks: [],
   });
 
-  // current content block
   const [block, setBlock] = useState({
     heading: "",
     text: "",
     links: [],
   });
 
-  // current link inside a block
   const [link, setLink] = useState({
     label: "",
     url: "",
@@ -286,12 +307,7 @@ const ActionSteps = ({ items, addItem }) => {
 
   const handleAddLinkToBlock = () => {
     if (!link.label.trim() || !link.url.trim()) return;
-
-    setBlock((prev) => ({
-      ...prev,
-      links: [...prev.links, link],
-    }));
-
+    setBlock((prev) => ({ ...prev, links: [...prev.links, link] }));
     setLink({ label: "", url: "" });
   };
 
@@ -303,11 +319,7 @@ const ActionSteps = ({ items, addItem }) => {
       contentBlocks: [...prev.contentBlocks, block],
     }));
 
-    setBlock({
-      heading: "",
-      text: "",
-      links: [],
-    });
+    setBlock({ heading: "", text: "", links: [] });
     setLink({ label: "", url: "" });
   };
 
@@ -319,139 +331,136 @@ const ActionSteps = ({ items, addItem }) => {
       stepNumber: Number(step.stepNumber),
       title: step.title.trim(),
       isRequired: step.isRequired,
-      isCompleted: false, // default value
+      isCompleted: false,
       contentBlocks: step.contentBlocks,
     };
 
     addItem(newStep);
 
-    // reset everything
-    setStep({
-      stepNumber: "",
-      title: "",
-      isRequired: false,
-      contentBlocks: [],
-    });
-    setBlock({
-      heading: "",
-      text: "",
-      links: [],
-    });
+    setStep({ stepNumber: "", title: "", isRequired: false, contentBlocks: [] });
+    setBlock({ heading: "", text: "", links: [] });
     setLink({ label: "", url: "" });
   };
 
   return (
-    <div className="mt-4">
-      <h2 className="font-semibold text-lg mb-2">Action Steps</h2>
-
+    <SectionCard
+      title="Action Steps"
+      desc="Build the steps users need to complete. Each step must have at least one content block."
+    >
       {/* Existing steps preview */}
-      {items.map((s, i) => (
-        <div key={i} className="border p-3 rounded mb-2">
-          <div className="font-semibold">
-            Step {s.stepNumber}: {s.title}{" "}
-            {s.isRequired && (
-              <span className="text-xs text-red-600">(Required)</span>
-            )}
-          </div>
+      {items.length > 0 ? (
+        <div className="space-y-3">
+          {items.map((s, i) => (
+            <div
+              key={i}
+              className="border border-gray-200 rounded-2xl p-4 bg-[#f8fafc]"
+            >
+              <div className="font-semibold text-gray-900">
+                Step {s.stepNumber}: {s.title}{" "}
+                {s.isRequired && (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-medium text-[#e13429]">
+                    Required
+                  </span>
+                )}
+              </div>
 
-          {s.contentBlocks?.map((b, idx) => (
-            <div key={idx} className="mt-1 ml-3 text-sm">
-              {b.heading && (
-                <p className="font-semibold">{b.heading}</p>
-              )}
-              {b.text && <p>{b.text}</p>}
-              {b.links?.length > 0 && (
-                <ul className="list-disc ml-5 mt-1">
-                  {b.links.map((lnk, j) => (
-                    <li key={j}>
-                      {lnk.label} ({lnk.url})
-                    </li>
-                  ))}
-                </ul>
-              )}
+              {s.contentBlocks?.map((b, idx) => (
+                <div key={idx} className="mt-2 ml-2 text-sm">
+                  {b.heading && <p className="font-semibold text-gray-900">{b.heading}</p>}
+                  {b.text && <p className="text-gray-600">{b.text}</p>}
+                  {b.links?.length > 0 && (
+                    <ul className="list-disc ml-5 mt-1">
+                      {b.links.map((lnk, j) => (
+                        <li key={j} className="text-gray-600">
+                          {lnk.label}{" "}
+                          <a
+                            className="text-[#e13429] underline"
+                            href={lnk.url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {lnk.url}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
             </div>
           ))}
         </div>
-      ))}
+      ) : (
+        <p className="text-gray-600 text-sm">No action steps added yet.</p>
+      )}
 
       {/* New step builder */}
-      <div className="space-y-3 mt-4 border-t pt-4">
-        <div className="flex gap-3">
+      <div className="mt-5 border-t border-gray-200 pt-5 space-y-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             placeholder="Step Number"
             type="number"
-            className="input w-32"
+            className="w-full sm:w-40 border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
             value={step.stepNumber}
-            onChange={(e) =>
-              setStep({ ...step, stepNumber: e.target.value })
-            }
+            onChange={(e) => setStep({ ...step, stepNumber: e.target.value })}
           />
 
           <input
             placeholder="Step Title (e.g., Learn About Blood Donation)"
-            className="input flex-1"
+            className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
             value={step.title}
-            onChange={(e) =>
-              setStep({ ...step, title: e.target.value })
-            }
+            onChange={(e) => setStep({ ...step, title: e.target.value })}
           />
         </div>
 
-        <label className="flex gap-2 items-center">
+        <label className="flex gap-2 items-center text-sm text-gray-700">
           <input
             type="checkbox"
+            className="h-4 w-4 accent-[#e13429]"
             checked={step.isRequired}
-            onChange={(e) =>
-              setStep({ ...step, isRequired: e.target.checked })
-            }
+            onChange={(e) => setStep({ ...step, isRequired: e.target.checked })}
           />
-          Required step
+          <span>Required step</span>
         </label>
 
         {/* Content block builder */}
-        <div className="mt-3 p-3 border rounded space-y-3">
-          <p className="font-semibold text-sm">Add Content Block</p>
+        <div className="p-4 border border-gray-200 rounded-3xl bg-[#f8fafc] space-y-3">
+          <p className="font-semibold text-sm text-gray-900">Add Content Block</p>
 
           <input
             placeholder="Section Heading (optional)"
-            className="input"
+            className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
             value={block.heading}
-            onChange={(e) =>
-              setBlock({ ...block, heading: e.target.value })
-            }
+            onChange={(e) => setBlock({ ...block, heading: e.target.value })}
           />
 
           <textarea
             placeholder="Paragraph text"
-            className="input"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+            rows={3}
             value={block.text}
-            onChange={(e) =>
-              setBlock({ ...block, text: e.target.value })
-            }
+            onChange={(e) => setBlock({ ...block, text: e.target.value })}
           />
 
-          {/* Links for this block */}
+          {/* Links */}
           <div className="space-y-2">
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 placeholder="Link Label"
-                className="input flex-1"
+                className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
                 value={link.label}
-                onChange={(e) =>
-                  setLink({ ...link, label: e.target.value })
-                }
+                onChange={(e) => setLink({ ...link, label: e.target.value })}
               />
               <input
                 placeholder="Link URL"
-                className="input flex-1"
+                className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
                 value={link.url}
-                onChange={(e) =>
-                  setLink({ ...link, url: e.target.value })
-                }
+                onChange={(e) => setLink({ ...link, url: e.target.value })}
               />
+
               <button
                 type="button"
-                className="bg-gray-800 text-white px-3 py-1 rounded text-sm"
+                className="h-11 rounded-full px-5 text-white bg-[#e13429] hover:bg-[#c62d23] transition shadow-sm"
                 onClick={handleAddLinkToBlock}
               >
                 Add Link
@@ -461,8 +470,16 @@ const ActionSteps = ({ items, addItem }) => {
             {block.links.length > 0 && (
               <ul className="list-disc ml-5 text-sm">
                 {block.links.map((lnk, i) => (
-                  <li key={i}>
-                    {lnk.label} ({lnk.url})
+                  <li key={i} className="text-gray-600">
+                    {lnk.label} —{" "}
+                    <a
+                      className="text-[#e13429] underline"
+                      href={lnk.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {lnk.url}
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -471,21 +488,21 @@ const ActionSteps = ({ items, addItem }) => {
 
           <button
             type="button"
-            className="bg-indigo-600 text-white px-3 py-1 rounded text-sm"
+            className="h-11 rounded-full px-5 border border-[#e13429] text-[#e13429] hover:bg-red-50 transition"
             onClick={handleAddBlockToStep}
           >
             Add Content Block to Step
           </button>
         </div>
 
-        {/* Current blocks summary for this step */}
+        {/* Current blocks summary */}
         {step.contentBlocks.length > 0 && (
-          <div className="mt-3 text-sm">
-            <p className="font-semibold mb-1">
+          <div className="text-sm">
+            <p className="font-semibold text-gray-900 mb-1">
               Content blocks for this step:
             </p>
             {step.contentBlocks.map((b, idx) => (
-              <p key={idx} className="ml-3">
+              <p key={idx} className="ml-3 text-gray-600">
                 • {b.heading || "Untitled section"}
               </p>
             ))}
@@ -494,13 +511,13 @@ const ActionSteps = ({ items, addItem }) => {
 
         <button
           type="button"
-          className="bg-green-600 text-white px-4 py-1.5 rounded mt-2"
+          className="h-11 rounded-full px-6 text-white bg-[#e13429] hover:bg-[#c62d23] transition shadow-sm"
           onClick={handleAddStep}
         >
           Add Action Step
         </button>
       </div>
-    </div>
+    </SectionCard>
   );
 };
 
@@ -508,36 +525,47 @@ const ChecklistItems = ({ items, addItem }) => {
   const [chk, setChk] = useState({ text: "", isMandatory: false });
 
   return (
-    <div className="mt-4">
-      <h2 className="font-semibold text-lg">Checklist Items</h2>
+    <SectionCard title="Checklist Items" desc="Checklist shown to the user for completion.">
+      {items.length > 0 ? (
+        <div className="space-y-1">
+          {items.map((c, i) => (
+            <p key={i} className="text-sm text-gray-800">
+              ✔ {c.text}{" "}
+              {c.isMandatory ? (
+                <span className="ml-2 inline-flex items-center rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-medium text-[#e13429]">
+                  Mandatory
+                </span>
+              ) : null}
+            </p>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-600 text-sm">No checklist items added yet.</p>
+      )}
 
-      {items.map((c, i) => (
-        <p key={i}>✔ {c.text}</p>
-      ))}
-
-      <div className="space-y-2 mt-2">
+      <div className="space-y-3 mt-4">
         <input
           placeholder="Checklist Item"
-          className="input"
+          className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
           value={chk.text}
           onChange={(e) => setChk({ ...chk, text: e.target.value })}
         />
 
-        <label className="flex gap-2 items-center">
+        <label className="flex gap-2 items-center text-sm text-gray-700">
           <input
             type="checkbox"
+            className="h-4 w-4 accent-[#e13429]"
             checked={chk.isMandatory}
-            onChange={(e) =>
-              setChk({ ...chk, isMandatory: e.target.checked })
-            }
+            onChange={(e) => setChk({ ...chk, isMandatory: e.target.checked })}
           />
-          Mandatory
+          <span>Mandatory</span>
         </label>
 
         <button
           type="button"
-          className="bg-green-600 text-white px-3 py-1 rounded"
+          className="h-11 rounded-full px-6 text-white bg-[#e13429] hover:bg-[#c62d23] transition shadow-sm"
           onClick={() => {
+            if (!chk.text.trim()) return;
             addItem(chk);
             setChk({ text: "", isMandatory: false });
           }}
@@ -545,7 +573,7 @@ const ChecklistItems = ({ items, addItem }) => {
           Add Checklist
         </button>
       </div>
-    </div>
+    </SectionCard>
   );
 };
 
@@ -553,34 +581,38 @@ const Requirements = ({ items, addItem }) => {
   const [req, setReq] = useState({ title: "", description: "" });
 
   return (
-    <div className="mt-4">
-      <h2 className="font-semibold text-lg">Requirements</h2>
+    <SectionCard title="Requirements" desc="What a user must have/do to participate.">
+      {items.length > 0 ? (
+        <div className="space-y-1">
+          {items.map((r, i) => (
+            <p key={i} className="text-sm text-gray-800">• {r.title}</p>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-600 text-sm">No requirements added yet.</p>
+      )}
 
-      {items.map((r, i) => (
-        <p key={i}>• {r.title}</p>
-      ))}
-
-      <div className="space-y-2 mt-2">
+      <div className="space-y-3 mt-4">
         <input
           placeholder="Requirement Title"
-          className="input"
+          className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
           value={req.title}
           onChange={(e) => setReq({ ...req, title: e.target.value })}
         />
 
         <textarea
           placeholder="Requirement Description"
-          className="input"
+          className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+          rows={3}
           value={req.description}
-          onChange={(e) =>
-            setReq({ ...req, description: e.target.value })
-          }
+          onChange={(e) => setReq({ ...req, description: e.target.value })}
         />
 
         <button
           type="button"
-          className="bg-green-600 text-white px-3 py-1 rounded"
+          className="h-11 rounded-full px-6 text-white bg-[#e13429] hover:bg-[#c62d23] transition shadow-sm"
           onClick={() => {
+            if (!req.title.trim()) return;
             addItem(req);
             setReq({ title: "", description: "" });
           }}
@@ -588,7 +620,7 @@ const Requirements = ({ items, addItem }) => {
           Add Requirement
         </button>
       </div>
-    </div>
+    </SectionCard>
   );
 };
 
@@ -596,36 +628,45 @@ const FAQs = ({ items, addItem }) => {
   const [faq, setFaq] = useState({ question: "", answer: "" });
 
   return (
-    <div className="mt-4">
-      <h2 className="font-semibold text-lg">FAQs</h2>
-
-      {items.map((f, i) => (
-        <div key={i} className="mb-2">
-          <b>Q:</b> {f.question}
-          <br />
-          <b>A:</b> {f.answer}
+    <SectionCard title="FAQs" desc="Frequently asked questions shown on event details.">
+      {items.length > 0 ? (
+        <div className="space-y-3">
+          {items.map((f, i) => (
+            <div key={i} className="border border-gray-200 rounded-2xl p-4 bg-[#f8fafc]">
+              <p className="text-sm text-gray-800">
+                <b>Q:</b> {f.question}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                <b>A:</b> {f.answer}
+              </p>
+            </div>
+          ))}
         </div>
-      ))}
+      ) : (
+        <p className="text-gray-600 text-sm">No FAQs added yet.</p>
+      )}
 
-      <div className="space-y-2 mt-2">
+      <div className="space-y-3 mt-4">
         <input
           placeholder="Question"
-          className="input"
+          className="w-full border border-gray-200 rounded-xl px-4 h-11 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
           value={faq.question}
           onChange={(e) => setFaq({ ...faq, question: e.target.value })}
         />
 
         <textarea
           placeholder="Answer"
-          className="input"
+          className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+          rows={3}
           value={faq.answer}
           onChange={(e) => setFaq({ ...faq, answer: e.target.value })}
         />
 
         <button
           type="button"
-          className="bg-green-600 text-white px-3 py-1 rounded"
+          className="h-11 rounded-full px-6 text-white bg-[#e13429] hover:bg-[#c62d23] transition shadow-sm"
           onClick={() => {
+            if (!faq.question.trim() || !faq.answer.trim()) return;
             addItem(faq);
             setFaq({ question: "", answer: "" });
           }}
@@ -633,7 +674,7 @@ const FAQs = ({ items, addItem }) => {
           Add FAQ
         </button>
       </div>
-    </div>
+    </SectionCard>
   );
 };
 

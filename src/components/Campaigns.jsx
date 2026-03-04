@@ -5,12 +5,8 @@ import { Link } from "react-router-dom";
 
 /**
  * LandingCampaignsPreview
- * - Shows ONLY first 3 events (no filters, no extra icons)
- * - DoSomething-like section heading + 3 cards
- * - Medwell theme:
- *   - Main heading: blue
- *   - Content: light blue
- *   - Slightly funky (subtle border/offset frame), not overdone
+ * - Shows ONLY first 3 events
+ * - Medwell theme: clean light background, red primary (#e13429)
  */
 const Campaigns = () => {
   const [events, setEvents] = useState([]);
@@ -31,7 +27,6 @@ const Campaigns = () => {
           withCredentials: true,
         });
 
-        // Only first 3
         const firstThree = Array.isArray(res.data) ? res.data.slice(0, 3) : [];
         setEvents(firstThree);
       } catch (err) {
@@ -47,9 +42,12 @@ const Campaigns = () => {
 
   if (loading) {
     return (
-      <section className="bg-blue-50 py-14">
+      <section className="bg-[#f8fafc] py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sky-600 font-medium">
+          <div className="flex justify-center">
+            <span className="loading loading-spinner loading-lg text-[#e13429]"></span>
+          </div>
+          <p className="text-center text-gray-600 font-medium mt-4">
             Loading campaigns...
           </p>
         </div>
@@ -59,39 +57,38 @@ const Campaigns = () => {
 
   if (error) {
     return (
-      <section className="bg-blue-50 py-14">
+      <section className="bg-[#f8fafc] py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-red-600 font-medium">{error}</p>
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+            {error}
+          </div>
         </div>
       </section>
     );
   }
 
   return (
-    <section id="causes" className="bg-blue-50 py-14">
+    <section id="causes" className="bg-[#f8fafc] py-14">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Heading (DoSomething-ish) */}
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-blue-700">
-            CREATING A HEALTHIER TOMORROW
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
+            Creating a Healthier Tomorrow
           </h2>
-          <p className="mt-3 text-base sm:text-lg text-sky-600">
+          <p className="mt-3 text-base sm:text-lg text-gray-600">
             Channel your passion into action with these featured health causes.
           </p>
         </div>
 
-        {/* Cards */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
           {events.map((event, i) => (
             <div key={event._id} className="relative">
-              {/* subtle funky offset frame */}
               <div
-                className={`absolute -inset-2 rounded-3xl border-2 border-blue-200 ${
+                className={`absolute -inset-2 rounded-3xl border border-gray-200 ${
                   i === 1 ? "rotate-[1.2deg]" : "rotate-[-1deg]"
                 }`}
               />
-              <div className="relative rounded-3xl overflow-hidden bg-white border border-blue-200 shadow-sm hover:shadow-md transition">
-                {/* Image */}
+
+              <div className="relative rounded-3xl overflow-hidden bg-white border border-gray-200 shadow-xl hover:shadow-2xl transition">
                 <div className="relative">
                   <img
                     src={event.imageUrl}
@@ -100,42 +97,36 @@ const Campaigns = () => {
                     loading="lazy"
                   />
 
-                  {/* label chip (blue bg + white text rule) */}
                   <div className="absolute bottom-3 left-3">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-700 text-white text-xs font-semibold">
-                      CAMPAIGN
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/90 border border-gray-200 text-xs font-semibold text-[#e13429]">
+                      Campaign
                     </span>
                   </div>
                 </div>
 
-                {/* Body */}
                 <div className="p-6">
-                  <h3 className="text-2xl font-extrabold text-blue-700">
+                  <h3 className="text-2xl font-extrabold text-gray-900">
                     {event.name}
                   </h3>
 
-                  <p className="mt-3 text-sky-600 text-sm leading-relaxed line-clamp-4">
+                  <p className="mt-3 text-gray-600 text-sm leading-relaxed line-clamp-4">
                     {event.caption}
                   </p>
 
-                  {/* Dates (small, light blue) */}
-                  <div className="mt-4 text-xs text-sky-600">
+                  <div className="mt-4 text-xs text-gray-600">
                     <p>
-                      <span className="font-semibold text-blue-700">
-                        Starts:
-                      </span>{" "}
-                      {new Date(event.startsAt).toLocaleDateString()}
+                      <span className="font-semibold text-gray-900">Starts:</span>{" "}
+                      {event.startsAt ? new Date(event.startsAt).toLocaleDateString() : "-"}
                     </p>
                     <p>
-                      <span className="font-semibold text-blue-700">Ends:</span>{" "}
-                      {new Date(event.endsAt).toLocaleDateString()}
+                      <span className="font-semibold text-gray-900">Ends:</span>{" "}
+                      {event.endsAt ? new Date(event.endsAt).toLocaleDateString() : "-"}
                     </p>
                   </div>
 
-                  {/* CTA */}
                   <div className="mt-6">
                     <Link to={`/home/event/${event._id}`}>
-                      <button className="w-full rounded-2xl bg-blue-700 text-white font-semibold py-3 hover:bg-blue-800 transition">
+                      <button className="w-full h-11 rounded-2xl bg-[#e13429] hover:bg-[#c62d23] text-white font-medium transition shadow-md">
                         Participate →
                       </button>
                     </Link>
@@ -146,17 +137,15 @@ const Campaigns = () => {
           ))}
         </div>
 
-        {/* If no events */}
         {events.length === 0 && (
-          <p className="text-center text-sky-600 mt-10">
+          <p className="text-center text-gray-600 mt-10">
             No featured campaigns found for this month.
           </p>
         )}
 
-        {/* Bottom CTA like the screenshot */}
         <div className="mt-10 flex justify-center">
           <Link to="/home">
-            <button className="px-10 py-3 rounded-xl bg-blue-900 text-white font-semibold hover:bg-blue-950 transition">
+            <button className="h-12 px-10 rounded-full bg-[#e13429] hover:bg-[#c62d23] text-white font-medium transition shadow-md">
               Explore More
             </button>
           </Link>

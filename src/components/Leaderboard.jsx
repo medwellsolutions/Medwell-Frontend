@@ -52,8 +52,6 @@ const Leaderboard = () => {
         params: { monthKey: mk },
         withCredentials: true,
       });
-
-      // expects backend data with rank already computed
       setRows(res?.data?.data || []);
     } catch (e) {
       console.error(e);
@@ -69,143 +67,217 @@ const Leaderboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [monthKey]);
 
+  // UI helpers (local so each file is self-contained)
+  const Card = ({ className = "", children }) => (
+    <div className={`bg-white border border-gray-200 rounded-3xl shadow-sm ${className}`}>
+      {children}
+    </div>
+  );
+
+  const PrimaryPill = ({ className = "", children }) => (
+    <span
+      className={[
+        "inline-flex items-center rounded-full px-3 py-1.5 font-extrabold",
+        "bg-[#e13429] text-white",
+        className,
+      ].join(" ")}
+    >
+      {children}
+    </span>
+  );
+
+  const SoftPill = ({ className = "", children }) => (
+    <span
+      className={[
+        "inline-flex items-center rounded-full px-3 py-1.5 font-extrabold",
+        "bg-gray-100 text-gray-900 border border-gray-200",
+        className,
+      ].join(" ")}
+    >
+      {children}
+    </span>
+  );
+
+  const OutlineButton = ({ className = "", ...props }) => (
+    <button
+      {...props}
+      className={[
+        "h-11 rounded-full px-5 font-medium",
+        "border border-[#e13429] text-[#e13429] hover:bg-red-50 transition",
+        className,
+      ].join(" ")}
+    />
+  );
+
+  const Select = ({ className = "", ...props }) => (
+    <select
+      {...props}
+      className={[
+        "h-11 rounded-2xl px-4 bg-white",
+        "border border-gray-200 text-gray-900",
+        "focus:outline-none focus:ring-2 focus:ring-[#e13429]/30",
+        className,
+      ].join(" ")}
+    />
+  );
+
   return (
-    <div className="min-h-screen bg-white px-4 sm:px-8 py-8">
+    <div className="min-h-screen bg-[#f8fafc] px-4 sm:px-8 py-10">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-700">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
               Leaderboard
             </h1>
-            <p className="mt-2 text-sm sm:text-base text-sky-600">
+            <p className="mt-2 text-sm sm:text-base text-gray-600">
               Rank • Name • Points (monthly)
             </p>
           </div>
 
           {/* Month Filter */}
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-blue-700 px-4 py-2 text-white shadow-sm">
-              <div className="text-[11px] opacity-90">Month</div>
-              <div className="text-sm font-semibold">{prettyMonth(monthKey)}</div>
-            </div>
+          <div className="flex flex-wrap items-center gap-3 justify-start sm:justify-end">
+            <Card className="px-4 py-2">
+              <div className="text-[11px] text-gray-500">Month</div>
+              <div className="text-sm font-extrabold text-[#e13429]">
+                {prettyMonth(monthKey)}
+              </div>
+            </Card>
 
-            <select
-              value={monthKey}
-              onChange={(e) => setMonthKey(e.target.value)}
-              className="rounded-2xl border border-blue-300 px-3 py-2 text-blue-700 font-semibold bg-white hover:bg-blue-50 transition focus:outline-none focus:ring-2 focus:ring-blue-200"
-            >
+            <Select value={monthKey} onChange={(e) => setMonthKey(e.target.value)}>
               {monthOptions.map((mk) => (
                 <option key={mk} value={mk}>
                   {prettyMonth(mk)}
                 </option>
               ))}
-            </select>
+            </Select>
 
-            <button
-              onClick={() => fetchLeaderboard(monthKey)}
-              className="rounded-2xl border border-blue-300 px-4 py-2 text-blue-700 font-semibold hover:bg-blue-50 transition"
-            >
+            <OutlineButton onClick={() => fetchLeaderboard(monthKey)}>
               Refresh
-            </button>
+            </OutlineButton>
           </div>
         </div>
 
-        {/* Info card */}
-        <div className="mb-6 rounded-3xl bg-blue-700 text-white p-4 sm:p-5 shadow-sm">
-          <div className="text-sm sm:text-base font-semibold">
-            Points update after admin approval ✅
-          </div>
-          <div className="text-xs sm:text-sm opacity-90 mt-1">
-            Users with no approved submissions in this month won’t appear.
-          </div>
-        </div>
+        {/* Info */}
+        <Card className="mb-6 px-4 py-3">
+          <p className="text-sm text-gray-600">
+            Points update after admin approval ✅{" "}
+            <span className="text-gray-500">
+              (Users with no approved submissions in this month won’t appear.)
+            </span>
+          </p>
+        </Card>
 
-        {/* Table */}
-        <div className="rounded-3xl border border-blue-200 bg-white shadow-sm overflow-hidden">
-          {/* Header row */}
-          <div className="grid grid-cols-12 gap-2 px-5 py-4 bg-blue-50">
-            <div className="col-span-2 text-xs font-bold text-blue-700 uppercase tracking-wide">
-              Rank
-            </div>
-            <div className="col-span-7 text-xs font-bold text-blue-700 uppercase tracking-wide">
-              Name
-            </div>
-            <div className="col-span-3 text-xs font-bold text-blue-700 uppercase tracking-wide text-right">
-              Points
-            </div>
-          </div>
+        {/* Table Card */}
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr className="text-left">
+                  <th className="px-5 py-4 text-sm font-bold text-[#e13429]">
+                    Rank
+                  </th>
+                  <th className="px-5 py-4 text-sm font-bold text-[#e13429]">
+                    Name
+                  </th>
+                  <th className="px-5 py-4 text-sm font-bold text-[#e13429] text-right">
+                    Points
+                  </th>
+                </tr>
+              </thead>
 
-          {/* Body */}
-          {loading ? (
-            <div className="p-6 text-sky-600">Loading leaderboard…</div>
-          ) : err ? (
-            <div className="p-6 text-red-600">{err}</div>
-          ) : rows.length === 0 ? (
-            <div className="p-6 text-sky-600">
-              No leaderboard data for {prettyMonth(monthKey)}.
-            </div>
-          ) : (
-            <div className="divide-y divide-blue-100">
-              {rows.map((r) => {
-                const rank = Number(r.rank || 0);
-                const top3 = rank >= 1 && rank <= 3;
-                const name =
-                  `${r.firstName || ""} ${r.lastName || ""}`.trim() ||
-                  r.name ||
-                  "Unknown";
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={3} className="px-5 py-10 text-center">
+                      <div className="inline-flex items-center gap-3">
+                        <div className="h-6 w-6 rounded-full border-4 border-gray-200 border-t-[#e13429] animate-spin" />
+                        <span className="text-gray-600">Loading leaderboard…</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : err ? (
+                  <tr>
+                    <td colSpan={3} className="px-5 py-6">
+                      <div className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                        {err}
+                      </div>
+                    </td>
+                  </tr>
+                ) : rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="px-5 py-10 text-center text-gray-600">
+                      No leaderboard data for{" "}
+                      <span className="font-semibold text-[#e13429]">
+                        {prettyMonth(monthKey)}
+                      </span>
+                      .
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((r) => {
+                    const rank = Number(r.rank || 0);
+                    const top3 = rank >= 1 && rank <= 3;
 
-                return (
-                  <div
-                    key={r.userId || `${name}-${rank}`}
-                    className={top3 ? "grid grid-cols-12 gap-2 px-5 py-4 items-center hover:brightness-95 transition"
-                                  : "grid grid-cols-12 gap-2 px-5 py-4 items-center hover:bg-blue-50 transition"}
-                  >
-                    {/* Rank */}
-                    <div className="col-span-2">
-                      <div
-                        className={
-                          top3
-                            ? "inline-flex items-center gap-2 rounded-2xl border border-blue-400/60 bg-blue-700 text-white shadow-sm px-3 py-1.5 font-bold"
-                            : "inline-flex items-center gap-2 rounded-2xl border border-blue-200/60 bg-white text-blue-800 px-3 py-1.5 font-bold"
-                        }
+                    const name =
+                      `${r.firstName || ""} ${r.lastName || ""}`.trim() ||
+                      r.name ||
+                      "Unknown";
+
+                    return (
+                      <tr
+                        key={r.userId || `${name}-${rank}`}
+                        className={top3 ? "bg-red-50/40" : "bg-white"}
                       >
-                        <span>{trophy(rank)}</span>
-                        <span>#{rank}</span>
-                      </div>
-                    </div>
+                        {/* Rank */}
+                        <td className="px-5 py-4">
+                          <span
+                            className={[
+                              "inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-bold border",
+                              top3
+                                ? "bg-[#e13429] text-white border-[#e13429]"
+                                : "bg-gray-100 text-gray-900 border-gray-200",
+                            ].join(" ")}
+                          >
+                            <span>{trophy(rank)}</span>
+                            <span>#{rank}</span>
+                          </span>
+                        </td>
 
-                    {/* Name */}
-                    <div className="col-span-7">
-                      <div className={top3 ? "font-semibold text-blue-900" : "font-semibold text-blue-800"}>
-                        {name}
-                      </div>
-                      <div className="text-xs text-sky-600">
-                        {r.userId ? `User: ${String(r.userId).slice(-6)}` : ""}
-                      </div>
-                    </div>
+                        {/* Name */}
+                        <td className="px-5 py-4">
+                          <div className="font-semibold text-gray-900">
+                            {name}
+                          </div>
+                          {r.userId && (
+                            <div className="text-xs text-gray-500">
+                              User: {String(r.userId).slice(-6)}
+                            </div>
+                          )}
+                        </td>
 
-                    {/* Points */}
-                    <div className="col-span-3 text-right">
-                      <div
-                        className={
-                          top3
-                            ? "inline-flex justify-end rounded-2xl px-3 py-1.5 font-extrabold bg-blue-700 text-white"
-                            : "inline-flex justify-end rounded-2xl px-3 py-1.5 font-extrabold bg-blue-100 text-blue-800"
-                        }
-                      >
-                        {Number(r.points || 0)}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                        {/* Points */}
+                        <td className="px-5 py-4 text-right">
+                          {top3 ? (
+                            <PrimaryPill>{Number(r.points || 0)}</PrimaryPill>
+                          ) : (
+                            <SoftPill>{Number(r.points || 0)}</SoftPill>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
 
-        <p className="mt-4 text-xs text-sky-600">
-          Month: <span className="font-semibold">{prettyMonth(monthKey)}</span>
+        <p className="mt-4 text-xs text-gray-500">
+          Month:{" "}
+          <span className="font-semibold text-[#e13429]">
+            {prettyMonth(monthKey)}
+          </span>
         </p>
       </div>
     </div>

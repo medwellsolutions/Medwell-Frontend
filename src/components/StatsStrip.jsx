@@ -40,7 +40,14 @@ const STATS = [
   {
     icon: (
       <svg viewBox="0 0 24 24" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10">
-        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <circle
+          cx="12"
+          cy="12"
+          r="8.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+        />
         <path
           d="M9.2 10.1c-.8-1-.4-2.6 1-3.1.9-.3 1.8.1 2.3.8.5-.7 1.4-1 2.3-.8 1.4.5 1.8 2.1 1 3.1-1.1 1.4-3.3 3-3.3 3s-2.2-1.6-3.3-3Z"
           fill="currentColor"
@@ -53,7 +60,14 @@ const STATS = [
   {
     icon: (
       <svg viewBox="0 0 24 24" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10">
-        <circle cx="12" cy="8" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <circle
+          cx="12"
+          cy="8"
+          r="4.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+        />
         <path
           d="M9 13l-3 8 6-3 6 3-3-8"
           fill="none"
@@ -70,7 +84,6 @@ const STATS = [
 
 // ---------- helpers ----------
 const parseStatValue = (valueStr) => {
-  // "5,000+" -> { num: 5000, suffix: "+" }
   const suffixMatch = valueStr.match(/[^\d,]+$/);
   const suffix = suffixMatch ? suffixMatch[0] : "";
   const num = Number(valueStr.replace(/[^\d]/g, "")) || 0;
@@ -79,6 +92,13 @@ const parseStatValue = (valueStr) => {
 
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
+/**
+ * Medwell theme (keep 2/3/4):
+ * - soft peach/orange gradient backdrop + friendly pastel feel
+ * - white rounded cards with gentle shadow + soft gray borders
+ * - primary CTA color: #e13429 (coral/red)
+ * - restrained playful accents (tiny tilt/outline)
+ */
 const StatsStrip = ({
   bg = "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=1920&auto=format&fit=crop",
 }) => {
@@ -95,10 +115,7 @@ const StatsStrip = ({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // animate once when ~35% visible
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-        }
+        if (entry.isIntersecting && !hasAnimated) setHasAnimated(true);
       },
       { threshold: 0.35 }
     );
@@ -110,7 +127,7 @@ const StatsStrip = ({
   useEffect(() => {
     if (!hasAnimated) return;
 
-    const duration = 1200; // ms
+    const duration = 1200;
     const start = performance.now();
 
     const tick = (now) => {
@@ -121,9 +138,7 @@ const StatsStrip = ({
       const nextCounts = parsed.map((p) => Math.round(p.num * eased));
       setCounts(nextCounts);
 
-      if (t < 1) {
-        rafRef.current = requestAnimationFrame(tick);
-      }
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
     };
 
     rafRef.current = requestAnimationFrame(tick);
@@ -136,33 +151,73 @@ const StatsStrip = ({
   return (
     <section
       ref={sectionRef}
-      className="my-10 sm:my-14 lg:my-20 relative isolate w-full bg-center bg-cover bg-no-repeat py-10 sm:py-14 lg:py-20"
-      style={{ backgroundImage: `url("${bg}")` }}
+      className="my-10 sm:my-14 lg:my-20 relative isolate w-full overflow-hidden py-12 sm:py-14 lg:py-20"
       aria-label="Organization statistics"
     >
+      {/* Background image */}
+      <div
+        className="absolute inset-0 -z-20 bg-center bg-cover bg-no-repeat"
+        style={{ backgroundImage: `url("${bg}")` }}
+      />
+
+      {/* Warm peach/coral overlay (keeps readability + matches signup vibe) */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-orange-50/70 via-rose-50/70 to-amber-50/70" />
+
+      {/* Soft dark veil for contrast without making it gloomy */}
+      <div className="absolute inset-0 -z-10 bg-slate-900/40" />
+
+      {/* Decorative soft blobs (pastel, restrained) */}
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-rose-200/25 blur-3xl -z-10" />
+      <div className="pointer-events-none absolute -bottom-28 -right-20 h-80 w-80 rounded-full bg-amber-200/20 blur-3xl -z-10" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 sm:gap-10 lg:gap-12 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 text-center text-white">
+        <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {STATS.map((s, i) => {
             const suffix = parsed[i]?.suffix ?? "";
             const valueToShow = hasAnimated ? counts[i] : 0;
 
             return (
-              <div key={i} className="flex flex-col items-center">
-                {/* Medwell theme: blue icons */}
-                <div className="text-blue-200">{s.icon}</div>
+              <div key={i} className="relative">
+                {/* tiny playful offset frame (pastel + coral accent) */}
+                <div
+                  className={`absolute -inset-2 rounded-3xl border ${
+                    i % 2 === 0 ? "rotate-[-0.6deg]" : "rotate-[0.6deg]"
+                  } border-white/25`}
+                />
+                <div
+                  className={`absolute -inset-2 rounded-3xl ${
+                    i % 2 === 0 ? "translate-x-[2px] translate-y-[2px]" : "-translate-x-[2px] translate-y-[2px]"
+                  } border border-[#e13429]/25`}
+                />
 
-                <div className="mt-3 sm:mt-4 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-wide">
-                  {valueToShow.toLocaleString()}
-                  {suffix}
-                </div>
+                <div className="relative rounded-3xl bg-white/90 border border-slate-200/80 backdrop-blur px-6 py-7 text-center shadow-[0_10px_26px_rgba(15,23,42,0.12)] hover:shadow-[0_14px_34px_rgba(15,23,42,0.16)] transition">
+                  {/* Icon */}
+                  <div className="inline-flex items-center justify-center rounded-2xl bg-rose-50 border border-rose-100 p-3 text-[#e13429]">
+                    {s.icon}
+                  </div>
 
-                <div className="mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg text-blue-100">
-                  {s.label}
+                  {/* Value */}
+                  <div className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900">
+                    {valueToShow.toLocaleString()}
+                    {suffix}
+                  </div>
+
+                  {/* Label */}
+                  <div className="mt-2 text-sm sm:text-base text-slate-600">
+                    {s.label}
+                  </div>
+
+                  {/* micro underline accent */}
+                  <div className="mx-auto mt-4 h-1 w-14 rounded-full bg-gradient-to-r from-[#e13429]/70 via-rose-300/70 to-amber-300/60" />
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Optional small caption */}
+        <div className="mt-8 text-center text-xs sm:text-sm text-white/85">
+          Built with community-first impact.
         </div>
       </div>
     </section>

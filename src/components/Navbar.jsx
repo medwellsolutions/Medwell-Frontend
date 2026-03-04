@@ -5,8 +5,8 @@ import { BASE_URL } from "../utils/constants";
 import { useSelector } from "react-redux";
 
 const Navbar = () => {
-  const user = useSelector((store) => store.user?.data); // full user object
-  const role = user?.role; // role (admin/user/etc.)
+  const user = useSelector((store) => store.user?.data);
+  const role = user?.role;
   const isLoggedIn = Boolean(user);
 
   const [open, setOpen] = useState(false);
@@ -22,8 +22,48 @@ const Navbar = () => {
     }
   };
 
+  const NavItem = ({ to, children, onClick }) => (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="text-sm font-semibold text-gray-600 hover:text-[#e13429] transition"
+    >
+      {children}
+    </Link>
+  );
+
+  const PrimaryLinkBtn = ({ to, children, onClick, className = "" }) => (
+    <Link
+      to={to}
+      onClick={onClick}
+      className={[
+        "inline-flex items-center justify-center",
+        "h-10 px-5 rounded-full",
+        "bg-[#e13429] hover:bg-[#c62d23] text-white font-medium transition shadow-sm",
+        className,
+      ].join(" ")}
+    >
+      {children}
+    </Link>
+  );
+
+  const OutlineBtn = ({ children, onClick, className = "" }) => (
+    <button
+      onClick={onClick}
+      type="button"
+      className={[
+        "inline-flex items-center justify-center",
+        "h-10 px-5 rounded-full",
+        "border border-[#e13429] text-[#e13429] hover:bg-red-50 transition",
+        className,
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <div className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-200">
+    <div className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-200">
       <div className="mx-auto max-w-7xl h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
@@ -39,58 +79,32 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-6">
           {isLoggedIn && (
             <>
-              <Link
-                to="/home"
-                className="text-sky-600 hover:text-blue-700 font-medium"
-              >
-                Home
-              </Link>
+              <NavItem to="/home">Home</NavItem>
+              <NavItem to="/home/profile">Profile</NavItem>
 
-              <Link
-                to="/home/profile"
-                className="text-sky-600 hover:text-blue-700 font-medium"
-              >
-                Profile
-              </Link>
-
-              {/* Admin only link */}
               {role === "admin" && (
-                <Link
-                  to="/home/admin/applications"
-                  className="text-sky-600 hover:text-blue-700 font-medium"
-                >
-                  Applications
-                </Link>
+                <NavItem to="/home/admin/applications">Applications</NavItem>
               )}
             </>
           )}
 
           {/* Login / Logout */}
           {isLoggedIn ? (
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded-md border border-red-500 text-red-600 font-medium hover:bg-red-50 transition"
-            >
-              Logout
-            </button>
+            <OutlineBtn onClick={handleLogout}>Logout</OutlineBtn>
           ) : (
-            <Link
-              to="/login"
-              className="px-4 py-2 rounded-md border border-green-600 text-green-700 font-medium hover:bg-green-50 transition"
-            >
-              Login
-            </Link>
+            <PrimaryLinkBtn to="/login">Login</PrimaryLinkBtn>
           )}
         </div>
 
         {/* Mobile Hamburger */}
         <button
-          className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-neutral-700 hover:bg-neutral-100"
+          className="md:hidden h-10 w-10 rounded-xl border border-gray-200 hover:bg-gray-50 transition inline-flex items-center justify-center"
           aria-label="Toggle menu"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
+          type="button"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" className="fill-current">
+          <svg width="24" height="24" viewBox="0 0 24 24" className="fill-gray-700">
             {open ? (
               <path d="M18.3 5.7a1 1 0 0 1 0 1.4L13.4 12l4.9 4.9a1 1 0 1 1-1.4 1.4L12 13.4l-4.9 4.9a1 1 0 1 1-1.4-1.4l4.9-4.9-4.9-4.9A1 1 0 1 1 7.1 4.3L12 9.2l4.9-4.9a1 1 0 0 1 1.4 0Z" />
             ) : (
@@ -106,58 +120,51 @@ const Navbar = () => {
           open ? "max-h-[60vh]" : "max-h-0"
         }`}
       >
-        <div className="px-4 sm:px-6 pb-4 flex flex-col gap-3 bg-white/95 backdrop-blur overflow-y-auto">
-          {isLoggedIn && (
-            <>
-              <Link
-                to="/home"
-                className="py-2 text-sky-600 hover:text-blue-700 font-medium"
-                onClick={() => setOpen(false)}
+        <div className="px-4 sm:px-6 pb-4 bg-white/95 backdrop-blur">
+          <div className="mt-3 bg-white border border-gray-200 rounded-3xl shadow-sm p-4 flex flex-col gap-3">
+            {isLoggedIn && (
+              <>
+                <NavItem to="/home" onClick={() => setOpen(false)}>
+                  Home
+                </NavItem>
+
+                <NavItem to="/home/profile" onClick={() => setOpen(false)}>
+                  Profile
+                </NavItem>
+
+                {role === "admin" && (
+                  <NavItem
+                    to="/home/admin/applications"
+                    onClick={() => setOpen(false)}
+                  >
+                    Applications
+                  </NavItem>
+                )}
+              </>
+            )}
+
+            <div className="pt-2 border-t border-gray-200" />
+
+            {isLoggedIn ? (
+              <OutlineBtn
+                className="justify-start"
+                onClick={() => {
+                  setOpen(false);
+                  handleLogout();
+                }}
               >
-                Home
-              </Link>
-
-              <Link
-                to="/home/profile"
-                className="py-2 text-sky-600 hover:text-blue-700 font-medium"
+                Logout
+              </OutlineBtn>
+            ) : (
+              <PrimaryLinkBtn
+                to="/login"
                 onClick={() => setOpen(false)}
+                className="justify-start"
               >
-                Profile
-              </Link>
-
-              {/* Mobile Admin only link */}
-              {role === "admin" && (
-                <Link
-                  to="/home/admin/applications"
-                  className="py-2 text-sky-600 hover:text-blue-700 font-medium"
-                  onClick={() => setOpen(false)}
-                >
-                  Applications
-                </Link>
-              )}
-            </>
-          )}
-
-          {/* Mobile Login / Logout */}
-          {isLoggedIn ? (
-            <button
-              onClick={() => {
-                setOpen(false);
-                handleLogout();
-              }}
-              className="py-2 text-red-600 font-medium hover:bg-red-50 rounded-md text-left px-2"
-            >
-              Logout
-            </button>
-          ) : (
-            <Link
-              to="/login"
-              onClick={() => setOpen(false)}
-              className="py-2 text-green-700 font-medium hover:bg-green-50 rounded-md text-left px-2"
-            >
-              Login
-            </Link>
-          )}
+                Login
+              </PrimaryLinkBtn>
+            )}
+          </div>
         </div>
       </div>
     </div>

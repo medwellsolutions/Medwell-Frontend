@@ -7,21 +7,15 @@ const AdminEventSubmissionsPage = () => {
   const [submissions, setSubmissions] = useState([]);
   const [error, setError] = useState("");
 
-  // filters
   const [status, setStatus] = useState("pending");
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedEvent, setSelectedEvent] = useState("");
 
-  // accordion
   const [openId, setOpenId] = useState(null);
 
-  // inputs
   const [rejectComments, setRejectComments] = useState({});
   const [hoursAwarded, setHoursAwarded] = useState({});
 
-  // ========================
-  // FETCH SUBMISSIONS
-  // ========================
   const fetchSubmissions = async () => {
     try {
       setLoading(true);
@@ -52,20 +46,16 @@ const AdminEventSubmissionsPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, selectedUser, selectedEvent]);
 
-  // ========================
-  // FILTER OPTIONS
-  // ========================
   const userOptions = useMemo(() => {
     const map = new Map();
 
     submissions.forEach((s) => {
-      if (s.user._id) {
+      if (s.user?._id) {
         const fullName = `${s.user.firstName || ""} ${s.user?.lastName || ""}`
           .trim()
           .replace(/\s+/g, " ");
 
         const label = `${fullName || "User"} (${s.user?.emailId || "no-email"})`;
-
         map.set(s.user._id, label);
       }
     });
@@ -77,18 +67,12 @@ const AdminEventSubmissionsPage = () => {
     const map = new Map();
     submissions.forEach((s) => {
       if (s.event?._id) {
-        map.set(
-          s.event._id,
-          `${s.event.name || "Event"} • ${s.event.month || ""}`
-        );
+        map.set(s.event._id, `${s.event.name || "Event"} • ${s.event.month || ""}`);
       }
     });
     return Array.from(map.entries());
   }, [submissions]);
 
-  // ========================
-  // REVIEW ACTIONS
-  // ========================
   const approveSubmission = async (id) => {
     try {
       await axios.patch(
@@ -100,7 +84,6 @@ const AdminEventSubmissionsPage = () => {
         { withCredentials: true }
       );
 
-      // remove immediately from list
       setSubmissions((prev) => prev.filter((s) => s._id !== id));
       setOpenId(null);
     } catch (err) {
@@ -135,228 +118,231 @@ const AdminEventSubmissionsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white px-6 py-6">
-      {/* HEADER + FILTERS */}
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Event Submissions Review</h1>
-          <p className="text-sm text-gray-600">
-            Click a submission to expand and review.
-          </p>
+    <div className="min-h-screen bg-[#f8fafc] px-4 sm:px-6 py-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
+              Event Submissions Review
+            </h1>
+            <p className="text-sm mt-1 text-gray-600">
+              Click a submission to expand and review.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3 items-center justify-start md:justify-end">
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm"
+            >
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+
+            <select
+              value={selectedUser}
+              onChange={(e) => setSelectedUser(e.target.value)}
+              className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm min-w-[240px]"
+            >
+              <option value="">All Users</option>
+              {userOptions.map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedEvent}
+              onChange={(e) => setSelectedEvent(e.target.value)}
+              className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm min-w-[240px]"
+            >
+              <option value="">All Events</option>
+              {eventOptions.map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => {
+                setSelectedUser("");
+                setSelectedEvent("");
+              }}
+              className="h-11 px-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition text-sm font-medium"
+            >
+              Clear
+            </button>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-3 items-center justify-start md:justify-end">
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border px-3 py-2 rounded-lg text-sm"
-          >
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
+        {loading && (
+          <div className="flex justify-center mt-10">
+            <span className="loading loading-spinner loading-lg text-[#e13429]"></span>
+          </div>
+        )}
 
-          <select
-            value={selectedUser}
-            onChange={(e) => setSelectedUser(e.target.value)}
-            className="border px-3 py-2 rounded-lg text-sm min-w-[220px]"
-          >
-            <option value="">All Users</option>
-            {userOptions.map(([id, label]) => (
-              <option key={id} value={id}>
-                {label}
-              </option>
-            ))}
-          </select>
+        {error && (
+          <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+            {error}
+          </div>
+        )}
 
-          <select
-            value={selectedEvent}
-            onChange={(e) => setSelectedEvent(e.target.value)}
-            className="border px-3 py-2 rounded-lg text-sm min-w-240px"
-          >
-            <option value="">All Events</option>
-            {eventOptions.map(([id, label]) => (
-              <option key={id} value={id}>
-                {label}
-              </option>
-            ))}
-          </select>
+        {!loading && !error && submissions.length === 0 && (
+          <div className="mt-8 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-gray-700">
+            No submissions found.
+          </div>
+        )}
 
-          <button
-            onClick={() => {
-              setSelectedUser("");
-              setSelectedEvent("");
-            }}
-            className="border px-3 py-2 rounded-lg text-sm hover:bg-gray-50"
-          >
-            Clear
-          </button>
-        </div>
-      </div>
+        <div className="space-y-4 max-w-4xl mx-auto mt-6">
+          {submissions.map((s) => {
+            const isOpen = openId === s._id;
 
-      {/* STATES */}
-      {loading && <p className="text-center mt-10">Loading...</p>}
-      {error && <p className="text-center mt-10 text-red-600">{error}</p>}
-      {!loading && !error && submissions.length === 0 && (
-        <p className="text-center mt-10 text-gray-600">No submissions found.</p>
-      )}
+            const fullName = `${s.user?.firstName || ""} ${s.user?.lastName || ""}`
+              .trim()
+              .replace(/\s+/g, " ");
 
-      {/* LIST (HALF WIDTH + CENTERED) */}
-      <div className="space-y-3 max-w-4xl mx-auto">
-        {submissions.map((s) => {
-          const isOpen = openId === s._id;
-
-          const fullName = `${s.user?.firstName || ""} ${s.user?.lastName || ""}`
-            .trim()
-            .replace(/\s+/g, " ");
-
-          return (
-            <div key={s._id} className="border rounded-xl overflow-hidden">
-              {/* BAR */}
-              <button
-                onClick={() => setOpenId(isOpen ? null : s._id)}
-                className="w-full flex justify-between items-center px-4 py-4 hover:bg-gray-50"
+            return (
+              <div
+                key={s._id}
+                className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xl"
               >
-                <div className="text-left">
-                  <p className="font-semibold text-[15px]">
-                    {s.event?.name}
-                    <span className="text-gray-500 font-normal">
-                      {" "}
-                      • {s.event?.month}
-                    </span>
-                  </p>
-
-                  <p className="text-sm text-gray-700 mt-0.5">
-                    👤 {fullName || "Unknown User"}
-                  </p>
-
-                  <p className="text-xs text-gray-500">
-                    ✉️ {s.user?.emailId || "No email"} • Step {s.stepNumber}
-                  </p>
-                </div>
-
-                <span className="text-lg text-gray-500">
-                  {isOpen ? "▴" : "▾"}
-                </span>
-              </button>
-
-              {/* EXPANDED */}
-              {isOpen && (
-                <div className="border-t px-4 py-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Proof */}
-                  <div>
-                    <h3 className="font-semibold mb-2">Proof</h3>
-
-                    {s.proofImageUrl ? (
-                      <a
-                        href={s.proofImageUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <img
-                          src={s.proofImageUrl}
-                          className="w-full h-64 object-cover rounded-lg border"
-                          alt="Proof"
-                        />
-                        <p className="text-xs text-gray-500 mt-1 underline">
-                          Open image in new tab
-                        </p>
-                      </a>
-                    ) : (
-                      <p className="text-sm text-gray-600">No image uploaded</p>
-                    )}
-
-                    {s.socialLink ? (
-                      <a
-                        href={s.socialLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block mt-2 text-indigo-600 underline break-all text-sm"
-                      >
-                        {s.socialLink}
-                      </a>
-                    ) : (
-                      <p className="text-sm text-gray-600 mt-2">
-                        No social link provided
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Experience + Actions */}
-                  <div>
-                    <h3 className="font-semibold mb-2">Experience</h3>
-                    <p className="text-sm whitespace-pre-wrap mb-4 text-gray-800">
-                      {s.experience}
+                <button
+                  onClick={() => setOpenId(isOpen ? null : s._id)}
+                  className="w-full flex justify-between items-center px-5 py-4 hover:bg-gray-50 transition"
+                >
+                  <div className="text-left">
+                    <p className="font-semibold text-[15px] text-gray-900">
+                      {s.event?.name}
+                      <span className="text-gray-500 font-normal"> • {s.event?.month}</span>
                     </p>
 
-                    {/* Hours */}
-                    <div className="mb-3">
-                      <label className="block text-sm font-medium mb-1">
-                        Hours (optional)
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={hoursAwarded[s._id] ?? ""}
-                        placeholder="0"
-                        className="border px-3 py-2 rounded-lg text-sm w-40"
-                        onChange={(e) =>
-                          setHoursAwarded((p) => ({
-                            ...p,
-                            [s._id]: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
+                    <p className="text-sm mt-1 text-gray-800">
+                      <span className="opacity-70">👤</span>{" "}
+                      <span className="font-medium">{fullName || "Unknown User"}</span>
+                    </p>
 
-                    {/* Reject comment */}
-                    <div className="mb-3">
-                      <label className="block text-sm font-medium mb-1">
-                        Rejection comment (required if rejecting)
-                      </label>
-                      <textarea
-                        className="border w-full px-3 py-2 rounded-lg text-sm"
-                        rows={3}
-                        value={rejectComments[s._id] ?? ""}
-                        placeholder="Explain why you are rejecting..."
-                        onChange={(e) =>
-                          setRejectComments((p) => ({
-                            ...p,
-                            [s._id]: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => approveSubmission(s._id)}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => rejectSubmission(s._id)}
-                        className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700"
-                      >
-                        Reject
-                      </button>
-                    </div>
-
-                    {/* Collapse */}
-                    <button
-                      onClick={() => setOpenId(null)}
-                      className="mt-4 text-sm underline text-gray-600 hover:text-black"
-                    >
-                      Collapse
-                    </button>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      ✉️ {s.user?.emailId || "No email"} • Step {s.stepNumber}
+                    </p>
                   </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+
+                  <span className="text-xl text-[#e13429]">{isOpen ? "▴" : "▾"}</span>
+                </button>
+
+                {isOpen && (
+                  <div className="border-t border-gray-200 px-5 py-5 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">Proof</h3>
+
+                      {s.proofImageUrl ? (
+                        <a href={s.proofImageUrl} target="_blank" rel="noreferrer">
+                          <img
+                            src={s.proofImageUrl}
+                            className="w-full h-64 object-cover rounded-xl border border-gray-200 bg-white"
+                            alt="Proof"
+                          />
+                          <p className="text-xs text-gray-500 mt-2 underline">
+                            Open image in new tab
+                          </p>
+                        </a>
+                      ) : (
+                        <p className="text-sm text-gray-600">No image uploaded</p>
+                      )}
+
+                      {s.socialLink ? (
+                        <a
+                          href={s.socialLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block mt-3 text-[#e13429] underline break-all text-sm"
+                        >
+                          {s.socialLink}
+                        </a>
+                      ) : (
+                        <p className="text-sm text-gray-600 mt-3">
+                          No social link provided
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">Experience</h3>
+
+                      <div className="rounded-xl bg-[#f8fafc] border border-gray-200 p-4">
+                        <p className="text-sm whitespace-pre-wrap text-gray-800">
+                          {s.experience}
+                        </p>
+                      </div>
+
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium mb-1 text-gray-800">
+                          Hours (optional)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={hoursAwarded[s._id] ?? ""}
+                          placeholder="0"
+                          className="h-11 w-40 rounded-xl border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#e13429]/25"
+                          onChange={(e) =>
+                            setHoursAwarded((p) => ({
+                              ...p,
+                              [s._id]: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
+
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium mb-1 text-gray-800">
+                          Rejection comment (required if rejecting)
+                        </label>
+                        <textarea
+                          className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#e13429]/25"
+                          rows={3}
+                          value={rejectComments[s._id] ?? ""}
+                          placeholder="Explain why you are rejecting..."
+                          onChange={(e) =>
+                            setRejectComments((p) => ({
+                              ...p,
+                              [s._id]: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
+
+                      <div className="mt-5 flex gap-3">
+                        <button
+                          onClick={() => approveSubmission(s._id)}
+                          className="flex-1 h-11 rounded-full bg-[#e13429] hover:bg-[#c62d23] text-white font-medium transition shadow-md"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => rejectSubmission(s._id)}
+                          className="flex-1 h-11 rounded-full border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 font-medium transition"
+                        >
+                          Reject
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={() => setOpenId(null)}
+                        className="mt-4 text-sm underline text-gray-500 hover:text-[#e13429] transition"
+                      >
+                        Collapse
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

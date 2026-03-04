@@ -24,201 +24,311 @@ const EventPage = () => {
     loadEvent();
   }, [eventId]);
 
-  if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
-  if (!event) return <p className="text-center mt-10">Loading...</p>;
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] grid place-items-center px-4">
+        <div className="max-w-xl w-full rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] grid place-items-center px-4">
+        <div className="text-center">
+          <div className="h-10 w-10 rounded-full border-4 border-gray-200 border-t-[#e13429] animate-spin mx-auto" />
+          <p className="text-gray-600 mt-4">Loading event...</p>
+        </div>
+      </div>
+    );
+  }
 
   const hasVolunteerCredit =
-    event.volunteerHours &&
-    typeof event.volunteerHours.isAvailable === "boolean";
+    event.volunteerHours && typeof event.volunteerHours.isAvailable === "boolean";
 
   const hasEstimatedTime =
     event.estimatedTime && event.estimatedTime.text?.trim()?.length > 0;
 
-  const startDate = event.startsAt
-    ? new Date(event.startsAt).toLocaleString()
-    : "";
-  const endDate = event.endsAt
-    ? new Date(event.endsAt).toLocaleString()
-    : "";
+  const startDate = event.startsAt ? new Date(event.startsAt).toLocaleString() : "";
+  const endDate = event.endsAt ? new Date(event.endsAt).toLocaleString() : "";
 
   const getActionLink = (step) => `/event/${eventId}/step/${step.stepNumber}`;
 
+  const Pill = ({ children }) => (
+    <span className="inline-flex items-center rounded-full border border-white/35 bg-white/10 px-3 py-1 text-xs text-white">
+      {children}
+    </span>
+  );
+
+  const Card = ({ children, className = "" }) => (
+    <div className={`bg-white border border-gray-200 rounded-3xl shadow-sm ${className}`}>
+      {children}
+    </div>
+  );
+
+  const PrimaryButton = ({ children, className = "" }) => (
+    <button
+      className={[
+        "h-12 rounded-full px-8 text-white font-medium",
+        "bg-[#e13429] hover:bg-[#c62d23] transition shadow-md",
+        className,
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
+
+  const OutlineButton = ({ children, className = "" }) => (
+    <button
+      className={[
+        "h-12 rounded-full px-6 font-medium",
+        "border border-[#e13429] text-[#e13429] hover:bg-red-50 transition",
+        className,
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <div className="w-full min-h-screen bg-white">
+    <div className="w-full min-h-screen bg-[#f8fafc]">
       {/* BANNER */}
-      <div className="relative w-full h-[350px] overflow-hidden">
+      <div className="relative w-full h-[360px] overflow-hidden">
         <img
           src={event.bannerImageUrl}
           className="w-full h-full object-cover"
           alt="Event Banner"
         />
 
-        <div className="absolute inset-0 bg-black/40 flex flex-col justify-center px-10">
-          <h1 className="text-white text-4xl font-bold max-w-4xl">
-            {event.name}
-          </h1>
-          <p className="text-white text-lg max-w-3xl mt-2">
-            {event.caption}
-          </p>
+        {/* Premium overlay (dark + slight red tint) */}
+        <div className="absolute inset-0 bg-black/55" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/55 to-black/70" />
+        <div className="absolute -top-24 -right-28 w-80 h-80 rounded-full blur-3xl bg-[#e13429]/25" />
+
+        {/* Banner content */}
+        <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-10">
+          <div className="max-w-6xl">
+            <h1 className="text-white text-3xl sm:text-4xl font-extrabold leading-tight">
+              {event.name}
+            </h1>
+            <p className="text-white/90 text-base sm:text-lg max-w-3xl mt-3">
+              {event.caption}
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Pill>{event.month || "Month"}</Pill>
+
+              {hasVolunteerCredit && (
+                <Pill>
+                  Volunteer Credit: {event.volunteerHours?.isAvailable ? "Yes" : "No"}
+                </Pill>
+              )}
+
+              {hasEstimatedTime && <Pill>Time: {event.estimatedTime.text}</Pill>}
+            </div>
+          </div>
         </div>
 
+        {/* CTA */}
         <Link
           to={`/home/event/${eventId}/step/1`}
-          state={{ event }}                 
-          className="absolute bottom-6 right-6 bg-white text-black font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-neutral-200 transition-all"
+          state={{ event }}
+          className="absolute bottom-6 right-6"
         >
-          Get Started →
+          <PrimaryButton>Get Started →</PrimaryButton>
         </Link>
-
       </div>
 
-      {/* INFO ROW (dispersed) */}
-      <div className="px-10 py-6 border-b">
-        <div className="max-w-6xl flex flex-wrap justify-between gap-y-4 gap-x-10">
-          <div className="min-w-160px">
-            <p className="text-sm font-bold">MONTH:</p>
-            <p className="font-bold">{event.month}</p>
-          </div>
+      {/* INFO ROW */}
+      <div className="px-4 sm:px-10 py-6">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card className="p-4">
+            <p className="text-xs font-bold text-[#e13429]">MONTH</p>
+            <p className="font-semibold text-gray-900 mt-1">{event.month}</p>
+          </Card>
 
-          <div className="min-w-160px">
-            <p className="text-sm font-bold ">STARTS AT:</p>
-            <p className="font-bold">{startDate || "Not specified"}</p>
-          </div>
-
-          <div className="min-w-160px">
-            <p className="text-sm font-bold">ENDS AT</p>
-            <p className="font-bold">{endDate || "Not specified"}</p>
-          </div>
-
-          <div className="min-w-160px">
-            <p className="text-sm font-bold ">
-              VOLUNTEER CREDIT:
+          <Card className="p-4">
+            <p className="text-xs font-bold text-[#e13429]">STARTS AT</p>
+            <p className="font-semibold text-gray-900 mt-1">
+              {startDate || "Not specified"}
             </p>
-            <p className="font-bold">
+          </Card>
+
+          <Card className="p-4">
+            <p className="text-xs font-bold text-[#e13429]">ENDS AT</p>
+            <p className="font-semibold text-gray-900 mt-1">
+              {endDate || "Not specified"}
+            </p>
+          </Card>
+
+          <Card className="p-4">
+            <p className="text-xs font-bold text-[#e13429]">VOLUNTEER CREDIT</p>
+            <p className="font-semibold text-gray-900 mt-1">
               {hasVolunteerCredit
                 ? event.volunteerHours.isAvailable
                   ? "YES"
                   : "NO"
                 : "Not specified"}
             </p>
-          </div>
+          </Card>
 
-          <div className="min-w-160px">
-            <p className="text-sm font-bold ">
-              ESTIMATED TIME TO COMPLETE:
-            </p>
-            <p className="font-bold">
+          <Card className="p-4">
+            <p className="text-xs font-bold text-[#e13429]">ESTIMATED TIME</p>
+            <p className="font-semibold text-gray-900 mt-1">
               {hasEstimatedTime ? event.estimatedTime.text : "Not specified"}
             </p>
-          </div>
+          </Card>
         </div>
       </div>
 
       {/* CONTENT + ACTION STEPS */}
-      <div className="flex w-full px-10 py-10 gap-10 relative">
-        {/* LEFT CONTENT – bigger, thicker typography */}
-        <div className="w-full lg:w-[65%] space-y-8 text-[18px] leading-[1.7]">
-          {/* Short description */}
-          <p className="text-[19px] font-semibold">
-            {event.shortDescription}
-          </p>
-
-          {/* Long description */}
-          <div className="space-y-4">
-            {event.longDescription
-              ?.split("\n")
-              .filter((line) => line.trim().length > 0)
-              .map((para, idx) => (
-                <p key={idx} className="text-[18px]">
-                  {para}
-                </p>
-              ))}
-          </div>
-
-          {/* Highlight Banner */}
-          {event.highlightText && (
-            <div className="w-full bg-[#4628FF] text-[#FFD06A] py-10 px-6 rounded-xl text-center my-10">
-              <p className="text-2xl font-semibold italic">
-                {event.highlightText}
+      <div className="max-w-6xl mx-auto px-4 sm:px-10 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* LEFT CONTENT */}
+        <div className="lg:col-span-8">
+          <Card className="p-6 sm:p-8">
+            {/* Short description */}
+            {event.shortDescription && (
+              <p className="text-base sm:text-lg font-semibold text-gray-900">
+                {event.shortDescription}
               </p>
-            </div>
-          )}
+            )}
 
-          {/* Requirements */}
-          {event.requirements?.length > 0 && (
-            <section>
-              <h2 className="text-2xl font-bold mb-4">Requirements</h2>
-              <ul className="space-y-3 text-[18px]">
-                {event.requirements.map((req) => (
-                  <li key={req._id}>
-                    <p className="font-semibold">{req.title}</p>
-                    {req.description && (
-                      <p className="text-gray-700">{req.description}</p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {/* FAQs */}
-          {event.FAQs?.length > 0 && (
-            <section>
-              <h2 className="text-2xl font-bold mb-4">Volunteer Credit FAQs</h2>
-              <div className="space-y-4 text-[18px]">
-                {event.FAQs.map((faq) => (
-                  <div key={faq._id}>
-                    <p className="font-semibold">Q: {faq.question}</p>
-                    <p className="text-gray-700">
-                      A: {faq.answer}
+            {/* Long description */}
+            {event.longDescription && (
+              <div className="mt-6 space-y-4">
+                {event.longDescription
+                  .split("\n")
+                  .filter((line) => line.trim().length > 0)
+                  .map((para, idx) => (
+                    <p key={idx} className="text-sm sm:text-base leading-relaxed text-gray-600">
+                      {para}
                     </p>
-                  </div>
-                ))}
+                  ))}
               </div>
-            </section>
-          )}
+            )}
+
+            {/* Highlight Banner */}
+            {event.highlightText && (
+              <div className="mt-8 rounded-3xl border border-red-100 bg-red-50 p-6 sm:p-8 text-center">
+                <p className="text-lg sm:text-2xl font-semibold italic text-gray-900">
+                  {event.highlightText}
+                </p>
+              </div>
+            )}
+
+            {/* Requirements */}
+            {event.requirements?.length > 0 && (
+              <section className="mt-10">
+                <h2 className="text-2xl font-extrabold mb-4 text-gray-900">
+                  Requirements
+                </h2>
+                <ul className="space-y-4">
+                  {event.requirements.map((req) => (
+                    <li
+                      key={req._id}
+                      className="border border-gray-200 rounded-3xl p-4 bg-[#f8fafc]"
+                    >
+                      <p className="font-semibold text-gray-900">{req.title}</p>
+                      {req.description && (
+                        <p className="text-gray-600 mt-1">{req.description}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {/* FAQs */}
+            {event.FAQs?.length > 0 && (
+              <section className="mt-10">
+                <h2 className="text-2xl font-extrabold mb-4 text-gray-900">
+                  Volunteer Credit FAQs
+                </h2>
+                <div className="space-y-4">
+                  {event.FAQs.map((faq) => (
+                    <div
+                      key={faq._id}
+                      className="border border-gray-200 rounded-3xl p-4 bg-[#f8fafc]"
+                    >
+                      <p className="font-semibold text-gray-900">
+                        Q: {faq.question}
+                      </p>
+                      <p className="text-gray-600 mt-1">A: {faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </Card>
         </div>
 
         {/* RIGHT STICKY ACTION STEPS */}
-        <div className="hidden lg:block w-[35%]">
-          <div className="sticky top-20 bg-black text-white p-6 rounded-xl shadow-xl">
-            <h3 className="text-xl font-bold mb-6">Action Steps</h3>
+        <div className="lg:col-span-4">
+          <div className="sticky top-20">
+            <Card className="p-6">
+              <h3 className="text-xl font-extrabold mb-5 text-gray-900">
+                Action Steps
+              </h3>
 
-            {event.actionSteps?.length > 0 ? (
-              <div className="flex flex-col space-y-6">
-                {event.actionSteps.map((step) => {
-                  const isDone = step.isCompleted === true;
+              {event.actionSteps?.length > 0 ? (
+                <div className="flex flex-col space-y-4">
+                  {event.actionSteps.map((step) => {
+                    const isDone = step.isCompleted === true;
 
-                  return (
-                    <div
-                      key={step._id || step.stepNumber}
-                      className="flex items-center gap-4"
-                    >
-                      {/* Circle */}
+                    return (
                       <div
-                        className={
-                          "w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold " +
-                          (isDone
-                            ? "bg-green-500 border-green-500 text-black"
-                            : "border-green-500 text-green-500")
-                        }
+                        key={step._id || step.stepNumber}
+                        className="flex items-start gap-3"
                       >
-                        {isDone ? "✓" : step.stepNumber}
-                      </div>
+                        {/* Circle */}
+                        <div
+                          className={[
+                            "w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border",
+                            isDone
+                              ? "bg-[#e13429] text-white border-[#e13429]"
+                              : "border-gray-300 text-gray-800 bg-white",
+                          ].join(" ")}
+                        >
+                          {isDone ? "✓" : step.stepNumber}
+                        </div>
 
-                      {/* Clickable Title */}
-                      <Link to={getActionLink(step)} className="no-underline">
-                        <p className="font-bold uppercase tracking-wide hover:text-green-400 transition">
-                          {step.title}
-                        </p>
-                      </Link>
-                    </div>
-                  );
-                })}
+                        {/* Clickable Title */}
+                        <div className="flex-1">
+                          <Link to={getActionLink(step)} className="no-underline">
+                            <p className="font-bold uppercase tracking-wide text-gray-900 hover:text-[#e13429] transition">
+                              {step.title}
+                            </p>
+                          </Link>
+
+                          {step.isRequired && (
+                            <span className="mt-1 inline-flex items-center rounded-full border border-[#e13429] bg-red-50 px-2 py-0.5 text-xs font-medium text-[#e13429]">
+                              Required
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">No action steps added.</p>
+              )}
+
+              <div className="mt-6">
+                <Link to={`/home/event/${eventId}/step/1`} state={{ event }}>
+                  <OutlineButton className="w-full">Start Step 1 →</OutlineButton>
+                </Link>
               </div>
-            ) : (
-              <p className="text-sm opacity-80">No action steps added.</p>
-            )}
+            </Card>
+
+            {/* Small helper card */}
+            <Card className="mt-4 p-5">
+              <p className="text-sm text-gray-600">
+                Tip: Complete the steps in order to maximize impact and earn credit (if available).
+              </p>
+            </Card>
           </div>
         </div>
       </div>

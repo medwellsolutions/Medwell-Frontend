@@ -1,2 +1,83 @@
 @import "tailwindcss";
-@plugin "daisyui";
+
+@plugin "daisyui" {
+  themes: medwellPeach --default;
+}
+
+@plugin "daisyui/theme" {
+  name: "medwellPeach";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  /* --- Screenshot theme (peach/coral) --- */
+  --color-primary: #f06b57;              /* coral CTA */
+  --color-primary-content: #ffffff;
+
+  --color-secondary: #ffb7a8;            /* soft coral */
+  --color-secondary-content: #2b2b2b;
+
+  --color-accent: #ffcfb8;               /* peach accent */
+  --color-accent-content: #2b2b2b;
+
+  --color-neutral: #2b2b2b;              /* headings */
+  --color-neutral-content: #ffffff;
+
+  --color-base-100: #ffffff;             /* card */
+  --color-base-200: #fff4ef;             /* page tint */
+  --color-base-300: #f1f1f5;             /* borders */
+  --color-base-content: #2b2b2b;         /* body text */
+
+  --radius-box: 1.75rem;                /* big rounded card */
+  --radius-field: 0.9rem;               /* inputs */
+  --radius-selector: 9999px;            /* pills/chips */
+  --depth: 1;
+  --noise: 0;
+}
+
+/* Full-page background like the image */
+.mw-hero {
+  background:
+    radial-gradient(1200px 520px at 12% 12%, rgba(255, 183, 168, 0.55), transparent 60%),
+    radial-gradient(1100px 520px at 70% 20%, rgba(255, 207, 184, 0.55), transparent 62%),
+    radial-gradient(1000px 520px at 85% 45%, rgba(240, 107, 87, 0.22), transparent 65%),
+    linear-gradient(to bottom, #fff6f2, #ffe6de 55%, #ffd4c7);
+}
+
+/* Typography (simple + friendly) */
+body {
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #2b2b2b;
+}
+
+.mw-heading {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #2b2b2b;
+}
+
+.mw-subtext {
+  color: rgba(43, 43, 43, 0.7);
+}
+
+/* Card shadow like screenshot */
+.mw-card-shadow {
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.14);
+}
+
+/* Soft input look */
+.mw-input {
+  border: 1px solid #e9e9ee;
+  background: #ffffff;
+}
+
+/* Pastel chips */
+.mw-chip {
+  border: 1px solid #e6e7ef;
+  background: #f6f7fb;
+}
+
+.mw-chip-mental { background: #ffe7b8; border-color: #ffe0a0; }
+.mw-chip-women  { background: #ffd0d7; border-color: #ffc0cb; }
+.mw-chip-climate{ background: #d7f3e2; border-color: #c6ead7; }
+.mw-chip-cancer { background: #ffd6d6; border-color: #ffc8c8; }

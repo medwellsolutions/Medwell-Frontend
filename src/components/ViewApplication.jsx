@@ -29,6 +29,52 @@ const isUrl = (v = "") => {
 };
 const isHex24 = (v) => typeof v === "string" && /^[a-f0-9]{24}$/i.test(v);
 
+/* =========================================================
+   Medwell Theme (keep 2/3/4):
+   - Warm peach/orange gradient backdrop
+   - Rounded white cards with gentle shadow + soft gray borders
+   - Primary action color: #e13429
+   - Pastel chips, restrained playful vibe
+   ========================================================= */
+const MW = {
+  page: "min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50 px-4 py-10",
+  shell: "max-w-6xl mx-auto",
+  headerCard:
+    "rounded-3xl bg-white/90 backdrop-blur border border-slate-200/80 shadow-[0_12px_32px_rgba(15,23,42,0.10)] px-6 sm:px-8 py-6",
+  title: "text-2xl sm:text-3xl font-extrabold text-slate-900",
+  sub: "mt-1 text-sm text-slate-600",
+
+  card:
+    "rounded-3xl bg-white/90 backdrop-blur border border-slate-200/80 shadow-[0_10px_26px_rgba(15,23,42,0.08)]",
+  cardHeader:
+    "flex items-center justify-between px-4 sm:px-6 py-3 border-b border-slate-200/70",
+  cardTitle: "text-sm font-extrabold text-slate-900",
+  cardBody: "px-4 sm:px-6 py-4",
+
+  fieldLabel: "w-40 shrink-0 text-sm font-semibold text-slate-600",
+  fieldValue: "flex-1 text-sm text-slate-900 break-words",
+
+  input:
+    "rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 " +
+    "focus:outline-none focus:ring-2 focus:ring-[#e13429]/20 focus:border-[#e13429]/35",
+  textarea:
+    "rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 " +
+    "focus:outline-none focus:ring-2 focus:ring-[#e13429]/20 focus:border-[#e13429]/35",
+  select:
+    "rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 " +
+    "focus:outline-none focus:ring-2 focus:ring-[#e13429]/20 focus:border-[#e13429]/35",
+
+  btnPrimary:
+    "rounded-full bg-[#e13429] px-4 py-2 text-sm font-extrabold text-white " +
+    "hover:bg-[#c92d25] active:bg-[#b82620] transition focus:outline-none focus:ring-2 focus:ring-[#e13429]/35 disabled:opacity-70",
+  btnGhost:
+    "rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-extrabold text-slate-700 " +
+    "hover:bg-slate-50 transition focus:outline-none focus:ring-2 focus:ring-[#e13429]/25",
+
+  chipBase:
+    "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1",
+};
+
 /* ------------------------------ Small UI ------------------------------ */
 
 const CopyButton = ({ value, className }) => {
@@ -44,7 +90,7 @@ const CopyButton = ({ value, className }) => {
         } catch {}
       }}
       className={cn(
-        "text-xs px-2 py-1 rounded-md border hover:bg-gray-50 transition",
+        "text-xs px-2 py-1 rounded-full border border-slate-200 bg-white hover:bg-slate-50 transition focus:outline-none focus:ring-2 focus:ring-[#e13429]/20",
         className
       )}
     >
@@ -55,34 +101,32 @@ const CopyButton = ({ value, className }) => {
 
 const Pill = ({ children, tone = "neutral" }) => {
   const tones = {
-    neutral: "bg-gray-100 text-gray-800 border border-gray-200",
-    success: "bg-emerald-100 text-emerald-800 border border-emerald-200",
-    warning: "bg-amber-100 text-amber-900 border border-amber-200",
-    danger: "bg-rose-100 text-rose-800 border border-rose-200",
-    info: "bg-blue-100 text-blue-800 border border-blue-200",
-    violet: "bg-violet-100 text-violet-800 border border-violet-200",
+    neutral: "bg-slate-100 text-slate-800 ring-slate-200",
+    success: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+    warning: "bg-amber-50 text-amber-900 ring-amber-200",
+    danger: "bg-rose-50 text-rose-800 ring-rose-200",
+    info: "bg-blue-50 text-blue-800 ring-blue-200",
+    violet: "bg-violet-50 text-violet-800 ring-violet-200",
   };
   return (
-    <span className={cn("px-2 py-0.5 text-xs rounded-full", tones[tone])}>
-      {children}
-    </span>
+    <span className={cn(MW.chipBase, "ring-1", tones[tone])}>{children}</span>
   );
 };
 
 const Section = ({ title, children, right }) => (
-  <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-    <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b">
-      <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
+  <div className={MW.card}>
+    <div className={MW.cardHeader}>
+      <h3 className={MW.cardTitle}>{title}</h3>
       {right}
     </div>
-    <div className="px-4 sm:px-6 py-4">{children}</div>
+    <div className={MW.cardBody}>{children}</div>
   </div>
 );
 
 const FieldRow = ({ label, children }) => (
   <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 py-2">
-    <div className="w-40 shrink-0 text-sm font-medium text-gray-600">{label}</div>
-    <div className="flex-1 text-sm text-gray-900 break-words">{children ?? "—"}</div>
+    <div className={MW.fieldLabel}>{label}</div>
+    <div className={MW.fieldValue}>{children ?? "—"}</div>
   </div>
 );
 
@@ -108,15 +152,17 @@ function downloadFile(fileId) {
 }
 
 const FileChip = ({ fileId, label }) => {
-  if (!fileId) return <span className="text-gray-400">—</span>;
+  if (!fileId) return <span className="text-slate-400">—</span>;
   return (
-    <div className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3">
-      <div className="text-xs font-medium text-gray-700">{label || "File"}</div>
+    <div className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-3">
+      <div className="text-xs font-extrabold text-slate-800">
+        {label || "File"}
+      </div>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={() => previewFile(fileId).catch(console.error)}
-          className="text-xs border rounded-md px-2 py-1 hover:bg-gray-100 whitespace-nowrap"
+          className={cn(MW.btnGhost, "px-3 py-1.5 text-xs")}
           title="Preview"
         >
           Preview
@@ -124,7 +170,7 @@ const FileChip = ({ fileId, label }) => {
         <button
           type="button"
           onClick={() => downloadFile(fileId)}
-          className="text-xs border rounded-md px-2 py-1 hover:bg-gray-100 whitespace-nowrap"
+          className={cn(MW.btnGhost, "px-3 py-1.5 text-xs")}
           title="Download"
         >
           Download
@@ -138,21 +184,28 @@ const FileChip = ({ fileId, label }) => {
 
 const RenderArray = ({ arr }) => {
   if (!Array.isArray(arr) || arr.length === 0)
-    return <span className="text-gray-400">—</span>;
+    return <span className="text-slate-400">—</span>;
+
   const allPrimitive = arr.every((x) => typeof x !== "object" || x === null);
   if (allPrimitive) {
     return (
       <div className="flex flex-wrap gap-2">
         {arr.map((item, idx) => (
-          <Pill key={idx}>{String(item)}</Pill>
+          <Pill key={idx} tone="neutral">
+            {String(item)}
+          </Pill>
         ))}
       </div>
     );
   }
+
   return (
     <div className="space-y-3">
       {arr.map((item, idx) => (
-        <div key={idx} className="rounded-xl border border-gray-100 p-3">
+        <div
+          key={idx}
+          className="rounded-2xl border border-slate-200 bg-white p-3"
+        >
           <KeyValueGrid obj={item} />
         </div>
       ))}
@@ -162,7 +215,7 @@ const RenderArray = ({ arr }) => {
 
 const RenderValue = ({ value, k }) => {
   if (value === null || value === undefined || value === "") {
-    return <span className="text-gray-400">—</span>;
+    return <span className="text-slate-400">—</span>;
   }
 
   if (
@@ -192,7 +245,7 @@ const RenderValue = ({ value, k }) => {
         href={str}
         target="_blank"
         rel="noreferrer"
-        className="underline underline-offset-2 decoration-gray-300 hover:decoration-gray-600 break-all"
+        className="underline underline-offset-2 decoration-slate-300 hover:decoration-slate-700 break-all text-slate-700"
       >
         {str}
       </a>
@@ -202,19 +255,23 @@ const RenderValue = ({ value, k }) => {
 };
 
 const KeyValueGrid = ({ obj }) => {
-  if (!obj || typeof obj !== "object") return <div className="text-gray-400">—</div>;
+  if (!obj || typeof obj !== "object")
+    return <div className="text-slate-400">—</div>;
+
   const entries = Object.entries(obj);
-  if (!entries.length) return <div className="text-gray-400">—</div>;
+  if (!entries.length) return <div className="text-slate-400">—</div>;
 
   return (
     <div className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-4">
       {entries.map(([k, v]) => (
         <div
           key={k}
-          className="min-w-[240px] rounded-xl border border-gray-100 p-3 overflow-hidden"
+          className="min-w-[240px] rounded-2xl border border-slate-200 bg-white p-3 overflow-hidden"
         >
-          <div className="text-xs uppercase tracking-wide text-gray-500">{k}</div>
-          <div className="mt-1 text-sm text-gray-900 break-words">
+          <div className="text-xs uppercase tracking-wide text-slate-500">
+            {k}
+          </div>
+          <div className="mt-1 text-sm text-slate-900 break-words">
             <RenderValue value={v} k={k} />
           </div>
         </div>
@@ -228,12 +285,12 @@ const KeyValueGrid = ({ obj }) => {
 const ViewApplication = () => {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { id } = useParams(); // USER ID for the GET route (backend should return latest submission for this user)
+  const { id } = useParams(); // USER ID for the GET route
 
   const [newStatus, setNewStatus] = useState("");
   const [loadingStatus, setLoadingStatus] = useState(false);
 
-  // ✅ new: award + comment controls
+  // award + comment controls
   const [hoursAwarded, setHoursAwarded] = useState(0);
   const [pointsAwarded, setPointsAwarded] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
@@ -247,7 +304,6 @@ const ViewApplication = () => {
         const d = res?.data?.data ?? null;
         setDetails(d);
 
-        // prefill edit fields
         if (d) {
           setNewStatus(d.reviewStatus || "hold");
           setHoursAwarded(Number(d.hoursAwarded || 0));
@@ -287,7 +343,6 @@ const ViewApplication = () => {
         { withCredentials: true }
       );
 
-      // update local UI
       setDetails((prev) => ({
         ...prev,
         reviewStatus: effectiveStatus,
@@ -327,138 +382,160 @@ const ViewApplication = () => {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="animate-pulse text-sm text-gray-500">Loading application…</div>
+      <div className={MW.page}>
+        <div className={MW.shell}>
+          <div className="animate-pulse text-sm text-slate-600">
+            Loading application…
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!details) {
     return (
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="text-sm text-gray-500">No application found.</div>
+      <div className={MW.page}>
+        <div className={MW.shell}>
+          <div className="text-sm text-slate-600">No application found.</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Application</h2>
-        <div className="mt-1 text-sm text-gray-500">
-          Application ID:&nbsp;
-          <span className="font-mono">{applicationId}</span>
-          <CopyButton className="ml-2" value={applicationId} />
-        </div>
-      </div>
+    <div className={MW.page}>
+      <div className={MW.shell}>
+        {/* Header */}
+        <div className={MW.headerCard}>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <h2 className={MW.title}>Application</h2>
+              <div className={MW.sub}>
+                Application ID:&nbsp;
+                <span className="font-mono text-slate-700">{applicationId}</span>
+                <CopyButton className="ml-2" value={applicationId} />
+              </div>
+            </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left */}
-        <div className="lg:col-span-2 space-y-6">
-          <Section title="Applicant">
-            <FieldRow label="User ID">
-              {user ? (
-                <>
-                  <span className="font-mono">{String(user)}</span>
-                  <CopyButton className="ml-2" value={String(user)} />
-                </>
-              ) : (
-                "—"
-              )}
-            </FieldRow>
-            <FieldRow label="Email">{email || "—"}</FieldRow>
-            <FieldRow label="Role">
-              {role ? <Pill tone="violet">{role}</Pill> : <span className="text-gray-400">—</span>}
-            </FieldRow>
-          </Section>
-
-          <Section title="Role-specific data">
-            <KeyValueGrid obj={rest} />
-          </Section>
+            <div className="flex flex-wrap items-center gap-2">
+              <Pill tone={statusTone}>{reviewStatus || "N/A"}</Pill>
+              {role ? <Pill tone="violet">{role}</Pill> : null}
+            </div>
+          </div>
         </div>
 
-        {/* Right */}
-        <div className="space-y-6">
-          <Section title="Status & Timestamps">
-            <FieldRow label="Review Status">
-              <div className="flex flex-wrap items-center gap-3">
-                <Pill tone={statusTone}>{reviewStatus || "N/A"}</Pill>
-                <select
-                  value={newStatus || reviewStatus || "hold"}
-                  onChange={(e) => setNewStatus(e.target.value)}
-                  className="border rounded-md text-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                >
-                  <option value="hold">Hold</option>
-                  <option value="accepted">Accepted</option>
-                  <option value="rejected">Rejected</option>
-                </select>
+        {/* Layout */}
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left */}
+          <div className="lg:col-span-2 space-y-6">
+            <Section title="Applicant">
+              <FieldRow label="User ID">
+                {user ? (
+                  <>
+                    <span className="font-mono">{String(user)}</span>
+                    <CopyButton className="ml-2" value={String(user)} />
+                  </>
+                ) : (
+                  "—"
+                )}
+              </FieldRow>
+              <FieldRow label="Email">{email || "—"}</FieldRow>
+              <FieldRow label="Role">
+                {role ? (
+                  <Pill tone="violet">{role}</Pill>
+                ) : (
+                  <span className="text-slate-400">—</span>
+                )}
+              </FieldRow>
+            </Section>
+
+            <Section title="Role-specific data">
+              <KeyValueGrid obj={rest} />
+            </Section>
+          </div>
+
+          {/* Right */}
+          <div className="space-y-6">
+            <Section
+              title="Status & Timestamps"
+              right={
                 <button
                   onClick={handleStatusChange}
                   disabled={loadingStatus}
-                  className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className={MW.btnPrimary}
                 >
                   {loadingStatus ? "Updating..." : "Update"}
                 </button>
-              </div>
-            </FieldRow>
-
-            {/* ✅ NEW: award hours */}
-            <FieldRow label="Hours Awarded">
-              <input
-                type="number"
-                min="0"
-                value={hoursAwarded}
-                onChange={(e) => setHoursAwarded(e.target.value)}
-                disabled={!canEditAwards}
-                className={cn(
-                  "border rounded-md text-sm px-2 py-1 w-32",
-                  !canEditAwards && "opacity-50 cursor-not-allowed"
-                )}
-              />
-              {!canEditAwards && (
-                <span className="ml-2 text-xs text-gray-500">
-                  Set status to Accepted to award hours
-                </span>
-              )}
-            </FieldRow>
-
-            {/* ✅ NEW: award points */}
-            <FieldRow label="Points Awarded">
-              <input
-                type="number"
-                min="0"
-                value={pointsAwarded}
-                onChange={(e) => setPointsAwarded(e.target.value)}
-                disabled={!canEditAwards}
-                className={cn(
-                  "border rounded-md text-sm px-2 py-1 w-32",
-                  !canEditAwards && "opacity-50 cursor-not-allowed"
-                )}
-              />
-            </FieldRow>
-
-            {/* ✅ NEW: review comment */}
-            <FieldRow label="Review Comment">
-              <textarea
-                value={reviewComment}
-                onChange={(e) => setReviewComment(e.target.value)}
-                rows={3}
-                placeholder="Required if rejecting"
-                className={cn(
-                  "border rounded-md text-sm px-2 py-1 w-full",
-                  effectiveStatus !== "rejected" && "opacity-80"
-                )}
-              />
-              {effectiveStatus === "rejected" && !String(reviewComment).trim() ? (
-                <div className="mt-1 text-xs text-rose-600">
-                  Comment required for rejection
+              }
+            >
+              <FieldRow label="Review Status">
+                <div className="flex flex-wrap items-center gap-3">
+                  <select
+                    value={newStatus || reviewStatus || "hold"}
+                    onChange={(e) => setNewStatus(e.target.value)}
+                    className={MW.select}
+                  >
+                    <option value="hold">Hold</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                  <span className="text-xs text-slate-500">
+                    Primary action color:{" "}
+                    <span className="font-semibold">#e13429</span>
+                  </span>
                 </div>
-              ) : null}
-            </FieldRow>
+              </FieldRow>
 
-            <FieldRow label="Created At">{formatDate(createdAt)}</FieldRow>
-            <FieldRow label="Updated At">{formatDate(updatedAt)}</FieldRow>
-          </Section>
+              <FieldRow label="Hours Awarded">
+                <div className="flex flex-wrap items-center gap-3">
+                  <input
+                    type="number"
+                    min="0"
+                    value={hoursAwarded}
+                    onChange={(e) => setHoursAwarded(e.target.value)}
+                    disabled={!canEditAwards}
+                    className={cn(MW.input, "w-32", !canEditAwards && "opacity-60 cursor-not-allowed")}
+                  />
+                  {!canEditAwards && (
+                    <span className="text-xs text-slate-500">
+                      Set status to <span className="font-semibold">Accepted</span> to award hours
+                    </span>
+                  )}
+                </div>
+              </FieldRow>
+
+              <FieldRow label="Points Awarded">
+                <input
+                  type="number"
+                  min="0"
+                  value={pointsAwarded}
+                  onChange={(e) => setPointsAwarded(e.target.value)}
+                  disabled={!canEditAwards}
+                  className={cn(MW.input, "w-32", !canEditAwards && "opacity-60 cursor-not-allowed")}
+                />
+              </FieldRow>
+
+              <FieldRow label="Review Comment">
+                <div className="w-full">
+                  <textarea
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    rows={3}
+                    placeholder="Required if rejecting"
+                    className={cn(MW.textarea, "w-full", effectiveStatus !== "rejected" && "opacity-90")}
+                  />
+                  {effectiveStatus === "rejected" && !String(reviewComment).trim() ? (
+                    <div className="mt-1 text-xs text-rose-600 font-semibold">
+                      Comment required for rejection
+                    </div>
+                  ) : null}
+                </div>
+              </FieldRow>
+
+              <FieldRow label="Created At">{formatDate(createdAt)}</FieldRow>
+              <FieldRow label="Updated At">{formatDate(updatedAt)}</FieldRow>
+            </Section>
+          </div>
         </div>
       </div>
     </div>
