@@ -1,9 +1,74 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
-import { uploadFileToS3 } from "../utils/S3Upload"; // IMPORTANT: this path is case-sensitive on Linux
+import { uploadFileToS3 } from "../utils/s3Upload";
 import { useSelector } from "react-redux";
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white border border-gray-200 rounded-3xl shadow-sm ${className}`}>
+    {children}
+  </div>
+);
+
+const PrimaryButton = ({ children, className = "", disabled, ...rest }) => (
+  <button
+    {...rest}
+    disabled={disabled}
+    className={[
+      "h-12 rounded-full px-8 text-white font-medium",
+      "bg-[#e13429] hover:bg-[#c62d23] transition shadow-md",
+      disabled ? "opacity-60 cursor-not-allowed hover:bg-[#e13429]" : "",
+      className,
+    ].join(" ")}
+  >
+    {children}
+  </button>
+);
+
+const OutlineButton = ({ children, className = "", ...rest }) => (
+  <button
+    {...rest}
+    className={[
+      "h-12 rounded-full px-6 font-medium",
+      "border border-[#e13429] text-[#e13429] hover:bg-red-50 transition",
+      className,
+    ].join(" ")}
+  >
+    {children}
+  </button>
+);
+
+const Input = (props) => (
+  <input
+    {...props}
+    className={[
+      "w-full border border-gray-200 rounded-xl px-4 h-11 bg-white",
+      "focus:outline-none focus:ring-2 focus:ring-[#e13429]/30",
+      props.className || "",
+    ].join(" ")}
+  />
+);
+
+const TextArea = (props) => (
+  <textarea
+    {...props}
+    className={[
+      "w-full border border-gray-200 rounded-xl px-4 py-3 bg-white",
+      "focus:outline-none focus:ring-2 focus:ring-[#e13429]/30",
+      props.className || "",
+    ].join(" ")}
+  />
+);
+
+const FilePicker = ({ onChange }) => (
+  <input
+    type="file"
+    accept="image/*"
+    onChange={onChange}
+    className="w-full border border-gray-200 rounded-xl px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
+  />
+);
 
 const EventStepPage = () => {
   const { eventId, stepNumber } = useParams();
@@ -24,6 +89,9 @@ const EventStepPage = () => {
 
   const [submitting, setSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  const [existingSubmission, setExistingSubmission] = useState(undefined); // undefined=loading, null=none
+  const [submissionLoading, setSubmissionLoading] = useState(true);
 
   const currentStepNum = Number(stepNumber) || 1;
 
@@ -57,73 +125,17 @@ const EventStepPage = () => {
     loadEvent();
   }, [eventId, eventFromState, user]);
 
+  useEffect(() => {
+    if (!user || !eventId || !currentStepNum) return;
+    setSubmissionLoading(true);
+    axios
+      .get(`${BASE_URL}/activity/submission/${eventId}/${currentStepNum}`, { withCredentials: true })
+      .then((res) => setExistingSubmission(res.data.submission || null))
+      .catch(() => setExistingSubmission(null))
+      .finally(() => setSubmissionLoading(false));
+  }, [user, eventId, currentStepNum]);
+
   if (!user) return null;
-
-  // UI helpers (local, so you can copy-paste file-by-file)
-  const Card = ({ children, className = "" }) => (
-    <div className={`bg-white border border-gray-200 rounded-3xl shadow-sm ${className}`}>
-      {children}
-    </div>
-  );
-
-  const PrimaryButton = ({ children, className = "", disabled, ...rest }) => (
-    <button
-      {...rest}
-      disabled={disabled}
-      className={[
-        "h-12 rounded-full px-8 text-white font-medium",
-        "bg-[#e13429] hover:bg-[#c62d23] transition shadow-md",
-        disabled ? "opacity-60 cursor-not-allowed hover:bg-[#e13429]" : "",
-        className,
-      ].join(" ")}
-    >
-      {children}
-    </button>
-  );
-
-  const OutlineButton = ({ children, className = "", ...rest }) => (
-    <button
-      {...rest}
-      className={[
-        "h-12 rounded-full px-6 font-medium",
-        "border border-[#e13429] text-[#e13429] hover:bg-red-50 transition",
-        className,
-      ].join(" ")}
-    >
-      {children}
-    </button>
-  );
-
-  const Input = (props) => (
-    <input
-      {...props}
-      className={[
-        "w-full border border-gray-200 rounded-xl px-4 h-11 bg-white",
-        "focus:outline-none focus:ring-2 focus:ring-[#e13429]/30",
-        props.className || "",
-      ].join(" ")}
-    />
-  );
-
-  const TextArea = (props) => (
-    <textarea
-      {...props}
-      className={[
-        "w-full border border-gray-200 rounded-xl px-4 py-3 bg-white",
-        "focus:outline-none focus:ring-2 focus:ring-[#e13429]/30",
-        props.className || "",
-      ].join(" ")}
-    />
-  );
-
-  const FilePicker = ({ onChange }) => (
-    <input
-      type="file"
-      accept="image/*"
-      onChange={onChange}
-      className="w-full border border-gray-200 rounded-xl px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#e13429]/30"
-    />
-  );
 
   if (loading) {
     return (
@@ -190,9 +202,7 @@ const EventStepPage = () => {
         withCredentials: true,
       });
 
-      console.log("Submission response:", data);
-      alert("Thank you! Your submission has been sent for review.");
-
+      setExistingSubmission(data.submission);
       setProofFile(null);
       setSocialLink("");
       setExperience("");
@@ -374,94 +384,132 @@ const EventStepPage = () => {
 
               {/* FINAL STEP */}
               {isFinalStep && (
-                <div className="mt-10 bg-[#f8fafc] border border-gray-200 rounded-3xl p-6 space-y-4">
-                  <h3 className="text-xl font-extrabold text-gray-900">
-                    Upload Proof & Complete This Step
-                  </h3>
-
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    Follow the instructions above for what counts as proof for this
-                    activity. You can complete this step by uploading a photo/screenshot,
-                    sharing a social media post link, or both. Sharing your experience is
-                    required so we can understand the impact of your actions.
-                  </p>
-
-                  {/* Upload */}
-                  <div>
-                    <p className="text-sm font-semibold text-gray-700 mb-1">
-                      Upload photo or screenshot
-                    </p>
-                    <FilePicker onChange={(e) => setProofFile(e.target.files?.[0] || null)} />
-                  </div>
-
-                  {proofFile && (
-                    <div className="mt-2">
-                      <p className="font-semibold text-sm text-gray-900 mb-2">
-                        Preview
-                      </p>
-                      <img
-                        src={URL.createObjectURL(proofFile)}
-                        alt="Proof Preview"
-                        className="w-60 h-60 object-cover rounded-2xl border border-gray-200 shadow"
-                      />
+                <div className="mt-10">
+                  {submissionLoading ? (
+                    <div className="flex items-center gap-3 text-gray-500 text-sm">
+                      <div className="h-5 w-5 rounded-full border-2 border-gray-200 border-t-[#e13429] animate-spin" />
+                      Checking submission status…
                     </div>
-                  )}
-
-                  {uploadProgress > 0 && uploadProgress < 100 && (
-                    <div className="mt-2">
-                      <p className="text-gray-600 text-sm mb-2">
-                        Uploading: {uploadProgress}%
+                  ) : existingSubmission?.status === "approved" ? (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 space-y-2">
+                      <p className="text-lg font-extrabold text-emerald-700">Submission Approved ✓</p>
+                      <p className="text-sm text-emerald-600">
+                        Your proof has been reviewed and approved. Thank you for your contribution!
                       </p>
-                      <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
-                        <div
-                          className="h-full bg-[#e13429]"
-                          style={{ width: `${uploadProgress}%` }}
+                      {existingSubmission.reviewComment && (
+                        <p className="text-sm text-gray-700 mt-2">
+                          <span className="font-semibold">Reviewer note:</span>{" "}
+                          {existingSubmission.reviewComment}
+                        </p>
+                      )}
+                    </div>
+                  ) : existingSubmission?.status === "pending" ? (
+                    <div className="bg-amber-50 border border-amber-200 rounded-3xl p-6 space-y-2">
+                      <p className="text-lg font-extrabold text-amber-700">Under Review</p>
+                      <p className="text-sm text-amber-600">
+                        Your submission is currently being reviewed. You will be notified once a decision is made.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-[#f8fafc] border border-gray-200 rounded-3xl p-6 space-y-4">
+                      {existingSubmission?.status === "rejected" && (
+                        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-1">
+                          <p className="text-sm font-extrabold text-red-700">Submission Rejected</p>
+                          {existingSubmission.reviewComment ? (
+                            <p className="text-sm text-red-600">
+                              <span className="font-semibold">Reason:</span>{" "}
+                              {existingSubmission.reviewComment}
+                            </p>
+                          ) : (
+                            <p className="text-sm text-red-600">Please resubmit with updated proof.</p>
+                          )}
+                        </div>
+                      )}
+
+                      <h3 className="text-xl font-extrabold text-gray-900">
+                        {existingSubmission?.status === "rejected"
+                          ? "Resubmit Proof"
+                          : "Upload Proof & Complete This Step"}
+                      </h3>
+
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        Follow the instructions above for what counts as proof for this
+                        activity. You can complete this step by uploading a photo/screenshot,
+                        sharing a social media post link, or both. Sharing your experience is
+                        required so we can understand the impact of your actions.
+                      </p>
+
+                      {/* Upload */}
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-1">
+                          Upload photo or screenshot
+                        </p>
+                        <FilePicker onChange={(e) => setProofFile(e.target.files?.[0] || null)} />
+                      </div>
+
+                      {proofFile && (
+                        <div className="mt-2">
+                          <p className="font-semibold text-sm text-gray-900 mb-2">Preview</p>
+                          <img
+                            src={URL.createObjectURL(proofFile)}
+                            alt="Proof Preview"
+                            className="w-60 h-60 object-cover rounded-2xl border border-gray-200 shadow"
+                          />
+                        </div>
+                      )}
+
+                      {uploadProgress > 0 && uploadProgress < 100 && (
+                        <div className="mt-2">
+                          <p className="text-gray-600 text-sm mb-2">Uploading: {uploadProgress}%</p>
+                          <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
+                            <div className="h-full bg-[#e13429]" style={{ width: `${uploadProgress}%` }} />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Social link */}
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-1">
+                          Link to your social media post
+                        </p>
+                        <Input
+                          type="url"
+                          value={socialLink}
+                          onChange={(e) => setSocialLink(e.target.value)}
+                          placeholder="https://www.instagram.com/..., https://x.com/..., etc."
                         />
+                        <p className="mt-2 text-xs text-gray-500">
+                          Instagram, Facebook, X, Reddit, or any platform used in this activity.
+                        </p>
+                      </div>
+
+                      {/* Experience */}
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-1">
+                          Tell us about your experience (required)
+                        </p>
+                        <TextArea
+                          rows={4}
+                          value={experience}
+                          onChange={(e) => setExperience(e.target.value)}
+                          placeholder="How did this activity feel? What did you learn or share?"
+                        />
+                        <p className="mt-2 text-xs text-gray-500">
+                          Write a few lines so we can understand your contribution.
+                        </p>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <PrimaryButton type="button" onClick={handleProofUpload} disabled={submitting}>
+                          {submitting
+                            ? "Submitting..."
+                            : existingSubmission?.status === "rejected"
+                            ? "Resubmit"
+                            : "Submit & Complete Event"}
+                        </PrimaryButton>
                       </div>
                     </div>
                   )}
-
-                  {/* Social link */}
-                  <div>
-                    <p className="text-sm font-semibold text-gray-700 mb-1">
-                      Link to your social media post
-                    </p>
-                    <Input
-                      type="url"
-                      value={socialLink}
-                      onChange={(e) => setSocialLink(e.target.value)}
-                      placeholder="https://www.instagram.com/..., https://x.com/..., etc."
-                    />
-                    <p className="mt-2 text-xs text-gray-500">
-                      Instagram, Facebook, X, Reddit, or any platform used in this activity.
-                    </p>
-                  </div>
-
-                  {/* Experience */}
-                  <div>
-                    <p className="text-sm font-semibold text-gray-700 mb-1">
-                      Tell us about your experience (required)
-                    </p>
-                    <TextArea
-                      rows={4}
-                      value={experience}
-                      onChange={(e) => setExperience(e.target.value)}
-                      placeholder="How did this activity feel? What did you learn or share?"
-                    />
-                    <p className="mt-2 text-xs text-gray-500">
-                      Write a few lines so we can understand your contribution.
-                    </p>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <PrimaryButton
-                      type="button"
-                      onClick={handleProofUpload}
-                      disabled={submitting}
-                    >
-                      {submitting ? "Submitting..." : "Submit & Complete Event"}
-                    </PrimaryButton>
-                  </div>
                 </div>
               )}
 

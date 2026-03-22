@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { BASE_URL } from "../utils/constants";
 
 const EventPage = () => {
   const { eventId } = useParams();
+  const role = useSelector((store) => store.user?.data?.role);
   const [event, setEvent] = useState(null);
   const [error, setError] = useState(null);
 
@@ -15,6 +17,8 @@ const EventPage = () => {
           withCredentials: true,
         });
         setEvent(data.event);
+        // Track the view (fire-and-forget)
+        axios.post(`${BASE_URL}/event/${eventId}/view`, {}, { withCredentials: true }).catch(() => {});
       } catch (err) {
         console.error(err);
         setError("Failed to load event.");
@@ -54,7 +58,7 @@ const EventPage = () => {
   const startDate = event.startsAt ? new Date(event.startsAt).toLocaleString() : "";
   const endDate = event.endsAt ? new Date(event.endsAt).toLocaleString() : "";
 
-  const getActionLink = (step) => `/event/${eventId}/step/${step.stepNumber}`;
+  const getActionLink = (step) => `/home/event/${eventId}/step/${step.stepNumber}`;
 
   const Pill = ({ children }) => (
     <span className="inline-flex items-center rounded-full border border-white/35 bg-white/10 px-3 py-1 text-xs text-white">
@@ -316,10 +320,17 @@ const EventPage = () => {
                 <p className="text-sm text-gray-600">No action steps added.</p>
               )}
 
-              <div className="mt-6">
+              <div className="mt-6 flex flex-col gap-3">
                 <Link to={`/home/event/${eventId}/step/1`} state={{ event }}>
                   <OutlineButton className="w-full">Start Step 1 →</OutlineButton>
                 </Link>
+                {role === "admin" && (
+                  <Link to={`/home/admin/event/${eventId}/edit`}>
+                    <button className="w-full h-12 rounded-full px-6 font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+                      Edit Event
+                    </button>
+                  </Link>
+                )}
               </div>
             </Card>
 

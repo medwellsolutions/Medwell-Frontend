@@ -21,6 +21,8 @@ import AdminEventSubmissionsPage from './components/AdminEventSubmissionsPage';
 import LandingTemp from './components/LandingTemp';
 import Leaderboard from './components/Leaderboard';
 import VerifyEmail from './components/verifyEmail';
+import VettingApplications from './components/VettingApplications';
+import VettingApplicationDetail from './components/VettingApplicationDetail';
 
 function App() {
 
@@ -51,7 +53,10 @@ function App() {
            <Route path = 'admin/applications' element = {<Applications/>}></Route>
            <Route path = 'admin/application/:id' element = {<ViewApplication/>}></Route>
            <Route path = 'admin/createEvent' element = {<CreateEvent/>}></Route>
+           <Route path = 'admin/event/:eventId/edit' element = {<CreateEvent/>}></Route>
            <Route path = 'admin/review/eventSubmissions' element = {<AdminEventSubmissionsPage/>}></Route>
+           <Route path="admin/vettings" element={<VettingApplications />} />
+           <Route path="admin/vetting/:role/:id" element={<VettingApplicationDetail />} />
 
           </Route>
           <Route path = 'doctor/register' element = {<DoctorRegister/>}></Route>

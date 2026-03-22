@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 import { useSelector } from "react-redux";
@@ -10,7 +10,16 @@ const Navbar = () => {
   const isLoggedIn = Boolean(user);
 
   const [open, setOpen] = useState(false);
+  const [pendingVettings, setPendingVettings] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (role !== "admin") return;
+    axios
+      .get(BASE_URL + "/admin/vettings/count", { withCredentials: true })
+      .then((res) => setPendingVettings(res.data?.data?.pending || 0))
+      .catch(() => {});
+  }, [role]);
   const logo = import.meta.env.VITE_MEDWELL_LOGO;
 
   const handleLogout = async () => {
@@ -80,10 +89,25 @@ const Navbar = () => {
           {isLoggedIn && (
             <>
               <NavItem to="/home">Home</NavItem>
+              <NavItem to="/home/leaderboard">Leaderboard</NavItem>
               <NavItem to="/home/profile">Profile</NavItem>
 
               {role === "admin" && (
-                <NavItem to="/home/admin/applications">Applications</NavItem>
+                <>
+                  <NavItem to="/home/admin/applications">Applications</NavItem>
+                  <NavItem to="/home/admin/createEvent">Create Event</NavItem>
+                  <Link
+                    to="/home/admin/vettings"
+                    className="relative text-sm font-semibold text-gray-600 hover:text-[#e13429] transition"
+                  >
+                    Vettings
+                    {pendingVettings > 0 && (
+                      <span className="absolute -top-2 -right-4 h-4 min-w-4 px-1 rounded-full bg-[#e13429] text-white text-[10px] font-bold flex items-center justify-center">
+                        {pendingVettings > 99 ? "99+" : pendingVettings}
+                      </span>
+                    )}
+                  </Link>
+                </>
               )}
             </>
           )}
@@ -128,17 +152,32 @@ const Navbar = () => {
                   Home
                 </NavItem>
 
+                <NavItem to="/home/leaderboard" onClick={() => setOpen(false)}>
+                  Leaderboard
+                </NavItem>
+
                 <NavItem to="/home/profile" onClick={() => setOpen(false)}>
                   Profile
                 </NavItem>
 
                 {role === "admin" && (
-                  <NavItem
-                    to="/home/admin/applications"
-                    onClick={() => setOpen(false)}
-                  >
-                    Applications
-                  </NavItem>
+                  <>
+                    <NavItem to="/home/admin/applications" onClick={() => setOpen(false)}>
+                      Applications
+                    </NavItem>
+                    <Link
+                      to="/home/admin/vettings"
+                      onClick={() => setOpen(false)}
+                      className="relative w-fit text-sm font-semibold text-gray-600 hover:text-[#e13429] transition"
+                    >
+                      Vettings
+                      {pendingVettings > 0 && (
+                        <span className="absolute -top-2 -right-4 h-4 min-w-4 px-1 rounded-full bg-[#e13429] text-white text-[10px] font-bold flex items-center justify-center">
+                          {pendingVettings > 99 ? "99+" : pendingVettings}
+                        </span>
+                      )}
+                    </Link>
+                  </>
                 )}
               </>
             )}

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import validator from "validator";
 import { BASE_URL } from "../utils/constants";
+import { uploadFileToS3 } from "../utils/s3Upload";
 
 /* ---- Options ---- */
 const MEMBERSHIP_OPTIONS = [
@@ -127,10 +128,14 @@ const TextField = ({
   onChange,
   textarea = false,
   rows = 3,
+  required = false,
   ...rest
 }) => (
   <div>
-    <label className={MW.label}>{label}</label>
+    <label className={MW.label}>
+      {label}
+      {required && <span className="ml-0.5 text-[#e13429]">*</span>}
+    </label>
     {textarea ? (
       <textarea
         className={MW.textarea}
@@ -282,43 +287,60 @@ const SupplierRegister = () => {
 
     try {
       setSubmitting(true);
-      const fd = new FormData();
 
-      fd.append("businessName", businessName);
-      fd.append("businessStructure", businessStructure);
-      fd.append("contactName", contactName);
-      fd.append("phone", phone);
-      fd.append("taxID", taxID);
-      fd.append(
-        "socialLinks",
-        JSON.stringify(socialLinks.map((s) => s.trim()).filter(Boolean))
+      // --- Upload files to S3, get back URLs ---
+      const [
+        businessLicenseUrl,
+        w9Url,
+        supplierDiversityStatusUrl,
+        productCatalogUrl,
+        pricingTiersUrl,
+        MOQUrl,
+        warrantyUrl,
+        distributorAgreementsUrl,
+      ] = await Promise.all([
+        businessLicense ? uploadFileToS3(businessLicense) : Promise.resolve(""),
+        w9 ? uploadFileToS3(w9) : Promise.resolve(""),
+        supplierDiversityStatus ? uploadFileToS3(supplierDiversityStatus) : Promise.resolve(""),
+        productCatalog ? uploadFileToS3(productCatalog) : Promise.resolve(""),
+        pricingTiers ? uploadFileToS3(pricingTiers) : Promise.resolve(""),
+        MOQ ? uploadFileToS3(MOQ) : Promise.resolve(""),
+        warranty ? uploadFileToS3(warranty) : Promise.resolve(""),
+        distributorAgreements ? uploadFileToS3(distributorAgreements) : Promise.resolve(""),
+      ]);
+
+      // --- Send JSON payload to backend ---
+      await axios.post(
+        `${BASE_URL}/supplier/vetting`,
+        {
+          businessName,
+          businessStructure,
+          contactName,
+          phone,
+          taxID,
+          socialLinks: socialLinks.map((s) => s.trim()).filter(Boolean),
+          supplierCategory,
+
+          businessLicenseUrl,
+          w9Url,
+          supplierDiversityStatusUrl,
+
+          MembershipParticipation: membership,
+
+          productCatalogUrl,
+          pricingTiersUrl,
+          MOQUrl,
+          warrantyUrl,
+          distributorAgreementsUrl,
+
+          wellness,
+          interest,
+          nonProfitInterest,
+
+          ...agreements,
+        },
+        { withCredentials: true }
       );
-      fd.append("supplierCategory", JSON.stringify(supplierCategory));
-
-      if (businessLicense) fd.append("businessLicense", businessLicense);
-      if (w9) fd.append("w9", w9);
-      if (supplierDiversityStatus)
-        fd.append("supplierDiversityStatus", supplierDiversityStatus);
-
-      fd.append("MembershipParticipation", JSON.stringify(membership));
-
-      if (productCatalog) fd.append("productCatalog", productCatalog);
-      if (pricingTiers) fd.append("pricingTiers", pricingTiers);
-      if (MOQ) fd.append("MOQ", MOQ);
-      if (warranty) fd.append("warranty", warranty);
-      if (distributorAgreements)
-        fd.append("distributorAgreements", distributorAgreements);
-
-      fd.append("wellness", wellness);
-      fd.append("interest", interest);
-      fd.append("nonProfitInterest", nonProfitInterest);
-
-      Object.entries(agreements).forEach(([k, v]) => fd.append(k, v));
-
-      await axios.post(`${BASE_URL}/supplier/vetting`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
 
       setSuccess("Supplier details submitted successfully!");
     } catch (err2) {
@@ -351,6 +373,9 @@ const SupplierRegister = () => {
               <p className={MW.sub}>
                 Join Medwell’s supplier network and support verified community impact.
               </p>
+              <p className="text-xs text-slate-500 mt-1">
+                Fields marked <span className="text-[#e13429] font-bold">*</span> are required
+              </p>
             </div>
           </div>
 
@@ -366,10 +391,14 @@ const SupplierRegister = () => {
                   label="Business Name"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
+                  required
                 />
 
                 <div>
-                  <label className={MW.label}>Business Structure</label>
+                  <label className={MW.label}>
+                    Business Structure
+                    <span className="ml-0.5 text-[#e13429]">*</span>
+                  </label>
                   <select
                     className={MW.select}
                     value={businessStructure}
@@ -389,11 +418,13 @@ const SupplierRegister = () => {
                   label="Primary Contact Name"
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
+                  required
                 />
                 <TextField
                   label="Phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  required
                 />
                 <TextField
                   label="Tax ID (NN-NNNNNNN)"

@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
 
 const MONTHS = [
   "January","February","March","April","May","June",
@@ -9,9 +11,13 @@ const MONTHS = [
 ];
 
 const MonthlyEvents = () => {
+  const navigate = useNavigate();
+  const role = useSelector((store) => store.user?.data?.role);
+
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [vettingCount, setVettingCount] = useState(null); // null = not loaded yet
 
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
   const [month, setMonth] = useState(currentMonth);
@@ -19,11 +25,22 @@ const MonthlyEvents = () => {
   const [showFilter, setShowFilter] = useState(false);
 
   useEffect(() => {
+    if (role !== "admin") return;
+    axios
+      .get(`${BASE_URL}/admin/vettings/count`, { withCredentials: true })
+      .then((res) => setVettingCount(res.data?.data || { pending: 0, total: 0 }))
+      .catch(() => setVettingCount({ pending: 0, total: 0 }));
+  }, [role]);
+
+  useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`${BASE_URL}/events/${month}`, {
+        const year = new Date().getFullYear();
+        const monthIndex = MONTHS.indexOf(month) + 1;
+        const monthKey = `${year}-${String(monthIndex).padStart(2, "0")}`;
+        const res = await axios.get(`${BASE_URL}/events/${monthKey}`, {
           withCredentials: true,
         });
         setEvents(res.data);
@@ -102,6 +119,36 @@ const MonthlyEvents = () => {
   return (
     <div className="bg-[#f8fafc] px-4 sm:px-8 py-8">
       <div className="max-w-6xl mx-auto">
+
+        {/* Admin vettings widget */}
+        {role === "admin" && vettingCount !== null && (
+          <div className="mb-6 rounded-3xl border border-gray-200 bg-white shadow-sm p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#e13429] font-extrabold text-xl shrink-0">
+                ✦
+              </div>
+              <div>
+                <p className="text-sm font-extrabold text-gray-900">Vetting Applications</p>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  <span className="font-semibold text-gray-700">{vettingCount.total}</span> total ·{" "}
+                  {vettingCount.pending > 0 ? (
+                    <span className="font-semibold text-[#e13429]">{vettingCount.pending} pending review</span>
+                  ) : (
+                    <span className="text-emerald-600 font-semibold">all reviewed</span>
+                  )}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/home/admin/vettings")}
+              className="shrink-0 h-10 px-5 rounded-full bg-[#e13429] hover:bg-[#c62d23] text-white text-sm font-semibold transition shadow-sm"
+            >
+              {vettingCount.pending > 0 ? `Review (${vettingCount.pending})` : "View All"}
+            </button>
+          </div>
+        )}
+
         <Card className="p-6 sm:p-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -116,10 +163,7 @@ const MonthlyEvents = () => {
 
             {/* Filter */}
             <div className="relative self-start sm:self-auto">
-              <OutlineBtn
-                onClick={() => setShowFilter((prev) => !prev)}
-                type="button"
-              >
+              <OutlineBtn onClick={() => setShowFilter((prev) => !prev)} type="button">
                 Filters
               </OutlineBtn>
 
@@ -138,28 +182,16 @@ const MonthlyEvents = () => {
                     </button>
                   </div>
 
-                  {/* Month Filter */}
-                  <label className="text-sm font-semibold text-gray-700">
-                    Month
-                  </label>
+                  <label className="text-sm font-semibold text-gray-700">Month</label>
                   <div className="mt-2">
-                    <Select
-                      value={month}
-                      onChange={(e) => setMonth(e.target.value)}
-                    >
+                    <Select value={month} onChange={(e) => setMonth(e.target.value)}>
                       {MONTHS.map((m) => (
-                        <option key={m} value={m}>
-                          {m}
-                        </option>
+                        <option key={m} value={m}>{m}</option>
                       ))}
                     </Select>
                   </div>
 
-                  <PrimaryBtn
-                    onClick={() => setShowFilter(false)}
-                    className="w-full mt-4"
-                    type="button"
-                  >
+                  <PrimaryBtn onClick={() => setShowFilter(false)} className="w-full mt-4" type="button">
                     Apply Filters
                   </PrimaryBtn>
 
@@ -175,30 +207,30 @@ const MonthlyEvents = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             {events.map((event, i) => (
               <div key={event._id} className="relative">
-                {/* subtle offset frame */}
                 <div
                   className={[
                     "absolute -inset-2 rounded-3xl border border-gray-200",
-                    i % 2 === 0 ? "rotate-[-1deg]" : "rotate-[1deg]",
+                    i % 2 === 0 ? "-rotate-1" : "rotate-1",
                   ].join(" ")}
                 />
-
                 <div className="relative border border-gray-200 rounded-3xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition">
+                  {/* Admin view count badge */}
+                  {role === "admin" && (
+                    <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-black/60 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      {event.viewCount ?? 0}
+                    </div>
+                  )}
                   <img
                     src={event.imageUrl}
                     alt={event.name}
                     className="w-full h-56 sm:h-64 object-cover"
                   />
-
                   <div className="p-6">
-                    <h3 className="text-xl font-extrabold text-gray-900">
-                      {event.name}
-                    </h3>
-
-                    <p className="text-gray-600 text-sm mt-3 leading-relaxed line-clamp-3">
-                      {event.caption}
-                    </p>
-
+                    <h3 className="text-xl font-extrabold text-gray-900">{event.name}</h3>
+                    <p className="text-gray-600 text-sm mt-3 leading-relaxed line-clamp-3">{event.caption}</p>
                     <div className="mt-4 text-xs text-gray-500 space-y-1">
                       <p>
                         <span className="font-semibold text-[#e13429]">Starts:</span>{" "}
@@ -209,12 +241,9 @@ const MonthlyEvents = () => {
                         {event.endsAt ? new Date(event.endsAt).toLocaleDateString() : "—"}
                       </p>
                     </div>
-
                     <div className="mt-6">
                       <Link to={`event/${event._id}`}>
-                        <PrimaryBtn className="w-full">
-                          Participate →
-                        </PrimaryBtn>
+                        <PrimaryBtn className="w-full">Participate →</PrimaryBtn>
                       </Link>
                     </div>
                   </div>
@@ -223,7 +252,6 @@ const MonthlyEvents = () => {
             ))}
           </div>
 
-          {/* Empty */}
           {events.length === 0 && (
             <div className="mt-8 text-center bg-gray-50 border border-gray-200 rounded-3xl p-6">
               <p className="text-gray-600">No events found for this month.</p>

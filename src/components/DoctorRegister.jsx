@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import validator from "validator";
 import { BASE_URL } from "../utils/constants";
+import { uploadFileToS3 } from "../utils/s3Upload";
 
 /* ---------- Options ---------- */
 const DOCTOR_PARTICIPATION_OPTIONS = [
@@ -93,9 +94,13 @@ const TextField = ({
   textarea = false,
   rows = 3,
   placeholder = "",
+  required = false,
 }) => (
   <div>
-    <Label>{label}</Label>
+    <Label>
+      {label}
+      {required && <span className="ml-0.5 text-[#e13429]">*</span>}
+    </Label>
     {textarea ? (
       <TextArea
         rows={rows}
@@ -259,45 +264,51 @@ const DoctorRegister = () => {
 
     try {
       setSubmitting(true);
-      const formData = new FormData();
-      formData.append("clinicName", clinicName);
-      formData.append("practiceAddress", practiceAddress);
-      formData.append("website", website);
-      formData.append(
-        "socialLinks",
-        JSON.stringify(socialLinks.map((s) => s.trim()).filter(Boolean))
-      );
-      if (businessLicense) formData.append("businessLicense", businessLicense);
-      if (w9) formData.append("w9", w9);
-      if (logo) formData.append("logo", logo);
-      if (headshot) formData.append("headshot", headshot);
-      formData.append("hipaaAcknowledged", hipaaAcknowledged);
 
-      formData.append("participationOptions", JSON.stringify(participationOptions));
-      formData.append("promoteEngagement", promoteEngagement);
-      formData.append("meaningfulCauses", meaningfulCauses);
+      // Upload files to S3, get back URLs
+      const [businessLicenseUrl, w9Url, logoUrl, headshotUrl] = await Promise.all([
+        businessLicense ? uploadFileToS3(businessLicense) : Promise.resolve(""),
+        w9 ? uploadFileToS3(w9) : Promise.resolve(""),
+        logo ? uploadFileToS3(logo) : Promise.resolve(""),
+        headshot ? uploadFileToS3(headshot) : Promise.resolve(""),
+      ]);
 
       let finalCampaignFit = [...campaignFit];
       if (customCampaignFit.trim()) {
         finalCampaignFit = [
           ...finalCampaignFit,
-          ...customCampaignFit
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
+          ...customCampaignFit.split(",").map((s) => s.trim()).filter(Boolean),
         ];
       }
-      formData.append("campaignFit", JSON.stringify(finalCampaignFit));
 
-      await axios.post(`${BASE_URL}/doctor/vetting`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
+      await axios.post(
+        `${BASE_URL}/doctor/vetting`,
+        {
+          clinicName,
+          practiceAddress,
+          website,
+          socialLinks: socialLinks.map((s) => s.trim()).filter(Boolean),
+          businessLicenseUrl,
+          w9Url,
+          logoUrl,
+          headshotUrl,
+          hipaaAcknowledged,
+          participationOptions,
+          promoteEngagement,
+          meaningfulCauses,
+          campaignFit: finalCampaignFit,
+        },
+        { withCredentials: true }
+      );
 
       setSuccess("Doctor details submitted successfully!");
     } catch (e2) {
       console.error(e2);
-      setError("Submission failed. Please check your input.");
+      setError(
+        e2?.response?.data?.error ||
+          e2?.response?.data?.message ||
+          "Submission failed. Please check your input."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -314,6 +325,9 @@ const DoctorRegister = () => {
             <p className="mt-2 text-sm text-gray-600">
               Provide clinic details and select how you want to participate.
             </p>
+            <p className="mt-1 text-xs text-gray-500">
+              Fields marked <span className="text-[#e13429] font-bold">*</span> are required
+            </p>
           </div>
 
           <div className="space-y-6">
@@ -324,12 +338,14 @@ const DoctorRegister = () => {
                 value={clinicName}
                 onChange={(e) => setClinicName(e.target.value)}
                 placeholder="Clinic / Practice name"
+                required
               />
               <TextField
                 label="Practice Address"
                 value={practiceAddress}
                 onChange={(e) => setPracticeAddress(e.target.value)}
                 placeholder="Street, City, State"
+                required
               />
               <TextField
                 label="Website"
@@ -370,12 +386,14 @@ const DoctorRegister = () => {
                   checked={hipaaAcknowledged}
                   onChange={() => setHipaaAcknowledged((v) => !v)}
                 />
-                <span className="font-medium">HIPAA Acknowledged</span>
+                <span className="font-medium">
+                  HIPAA Acknowledged <span className="text-[#e13429]">*</span>
+                </span>
               </label>
             </Section>
 
             {/* Section 3 */}
-            <Section title="Section 3: Participation Options (Select at least 5)">
+            <Section title="Section 3: Participation Options (Select at least 5) *">
               <CheckboxGroup
                 options={DOCTOR_PARTICIPATION_OPTIONS}
                 value={participationOptions}

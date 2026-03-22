@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import validator from "validator";
 import { BASE_URL } from "../utils/constants";
+import { uploadFileToS3 } from "../utils/s3Upload";
 
 /* ---------- options ---------- */
 const PARTICIPATION = [
@@ -50,10 +51,12 @@ const Field = ({
   rows = 3,
   placeholder = "",
   type = "text",
+  required = false,
 }) => (
   <div>
     <label className="block text-sm font-semibold text-gray-800 mb-1">
       {label}
+      {required && <span className="ml-0.5 text-[#e13429]">*</span>}
     </label>
     {textarea ? (
       <textarea
@@ -236,51 +239,56 @@ const NonProfitRegister = () => {
 
     try {
       setSubmitting(true);
-      const fd = new FormData();
 
-      // Section 1
-      fd.append("legalName", legalName);
-      if (determinationLetter)
-        fd.append("determinationLetter", determinationLetter);
-      fd.append("stateIncorp", stateIncorp);
-      fd.append("contactName", contactName);
-      fd.append("contactTitle", contactTitle);
-      fd.append("contactPhone", contactPhone);
-      fd.append("contactEmail", contactEmail);
-      fd.append(
-        "socialLinks",
-        JSON.stringify(socialLinks.map((s) => s.trim()).filter(Boolean))
+      // Upload files to S3, get back URLs
+      const [
+        determinationLetterUrl,
+        taxExemptLetterUrl,
+        goodStandingCertUrl,
+        impactSummaryUrl,
+        ...mediaKitUrls
+      ] = await Promise.all([
+        determinationLetter ? uploadFileToS3(determinationLetter) : Promise.resolve(""),
+        taxExemptLetter     ? uploadFileToS3(taxExemptLetter)     : Promise.resolve(""),
+        goodStandingCert    ? uploadFileToS3(goodStandingCert)    : Promise.resolve(""),
+        impactSummary       ? uploadFileToS3(impactSummary)       : Promise.resolve(""),
+        ...mediaKit.map((f) => uploadFileToS3(f)),
+      ]);
+
+      await axios.post(
+        `${BASE_URL}/non-profit/vetting`,
+        {
+          legalName,
+          stateIncorp,
+          contactName,
+          contactTitle,
+          contactPhone,
+          contactEmail,
+          socialLinks: socialLinks.map((s) => s.trim()).filter(Boolean),
+          missionStatement,
+          programsSummary,
+          determinationLetterUrl,
+          taxExemptLetterUrl,
+          goodStandingCertUrl,
+          impactSummaryUrl,
+          mediaKitUrls: mediaKitUrls.filter(Boolean),
+          participationReadiness,
+          alignWithMedwell,
+          pastCampaign,
+          desiredImpact,
+          programFit,
+          ...agreements,
+        },
+        { withCredentials: true }
       );
-      fd.append("missionStatement", missionStatement);
-      fd.append("programsSummary", programsSummary);
-
-      // Section 2 uploads
-      if (taxExemptLetter) fd.append("taxExemptLetter", taxExemptLetter);
-      if (goodStandingCert) fd.append("goodStandingCert", goodStandingCert);
-      if (impactSummary) fd.append("impactSummary", impactSummary);
-      mediaKit.forEach((f) => fd.append("mediaKit", f));
-
-      // Section 3–5
-      fd.append(
-        "participationReadiness",
-        JSON.stringify(participationReadiness)
-      );
-      fd.append("alignWithMedwell", alignWithMedwell);
-      fd.append("pastCampaign", pastCampaign);
-      fd.append("desiredImpact", desiredImpact);
-      fd.append("programFit", JSON.stringify(programFit));
-
-      // Agreements
-      Object.entries(agreements).forEach(([k, v]) => fd.append(k, v));
-
-      await axios.post(`${BASE_URL}/non-profit/vetting`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
 
       setSuccess("Non-profit registration submitted successfully!");
-    } catch {
-      setError("Submission failed. Please check your input.");
+    } catch (e2) {
+      setError(
+        e2?.response?.data?.error ||
+          e2?.response?.data?.message ||
+          "Submission failed. Please check your input."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -299,6 +307,9 @@ const NonProfitRegister = () => {
           <p className="text-gray-600 mt-2">
             Share your details to get vetted and partner with Medwell campaigns.
           </p>
+          <p className="text-xs text-gray-500 mt-1">
+            Fields marked <span className="text-[#e13429] font-bold">*</span> are required
+          </p>
         </div>
 
         <div className="space-y-6">
@@ -308,6 +319,7 @@ const NonProfitRegister = () => {
               label="Legal Organization Name"
               value={legalName}
               onChange={(e) => setLegalName(e.target.value)}
+              required
             />
             <FileField
               label="EIN / 501(c)(3) Determination Letter"
@@ -319,11 +331,13 @@ const NonProfitRegister = () => {
               label="State of Incorporation"
               value={stateIncorp}
               onChange={(e) => setStateIncorp(e.target.value)}
+              required
             />
             <Field
               label="Primary Contact Name"
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
+              required
             />
             <Field
               label="Contact Title"
@@ -334,12 +348,14 @@ const NonProfitRegister = () => {
               label="Contact Phone"
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
+              required
             />
             <Field
               label="Contact Email"
               type="email"
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
+              required
             />
             <SocialLinks links={socialLinks} setLinks={setSocialLinks} />
             <Field
@@ -348,6 +364,7 @@ const NonProfitRegister = () => {
               value={missionStatement}
               onChange={(e) => setMissionStatement(e.target.value)}
               rows={4}
+              required
             />
             <Field
               textarea
@@ -355,6 +372,7 @@ const NonProfitRegister = () => {
               value={programsSummary}
               onChange={(e) => setProgramsSummary(e.target.value)}
               rows={4}
+              required
             />
           </Card>
 
@@ -392,7 +410,7 @@ const NonProfitRegister = () => {
           {/* Section 3 */}
           <Card
             title="Section 3: Participation Readiness"
-            subtitle="Select at least 5"
+            subtitle="Select at least 5 *"
           >
             <CheckboxGroup
               options={PARTICIPATION}
@@ -412,6 +430,7 @@ const NonProfitRegister = () => {
               value={alignWithMedwell}
               onChange={(e) => setAlignWithMedwell(e.target.value)}
               rows={4}
+              required
             />
             <Field
               textarea
@@ -419,6 +438,7 @@ const NonProfitRegister = () => {
               value={pastCampaign}
               onChange={(e) => setPastCampaign(e.target.value)}
               rows={4}
+              required
             />
             <Field
               textarea
@@ -426,6 +446,7 @@ const NonProfitRegister = () => {
               value={desiredImpact}
               onChange={(e) => setDesiredImpact(e.target.value)}
               rows={4}
+              required
             />
           </Card>
 

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import axios from "axios";
 import validator from "validator";
 import { BASE_URL } from "../utils/constants";
+import { uploadFileToS3 } from "../utils/s3Upload";
 
 /* ---------- Options ---------- */
 const SPONSORSHIP_GOALS = [
@@ -291,38 +292,41 @@ const SponsorRegister = () => {
 
     try {
       setSubmitting(true);
-      const fd = new FormData();
-      fd.append("businessName", businessName);
-      fd.append("entityType", entityType);
-      fd.append("contactName", contactName);
-      fd.append("contactEmail", contactEmail);
-      fd.append("contactPhone", contactPhone);
-      fd.append(
-        "socialLinks",
-        JSON.stringify(socialLinks.map((s) => s.trim()).filter(Boolean))
+
+      // Upload files to S3, get back URLs
+      const [logoUrl, styleGuideUrl, marketingLanguageUrl, w9OrReceiptUrl, liaisonDocUrl] =
+        await Promise.all([
+          logo              ? uploadFileToS3(logo)              : Promise.resolve(""),
+          styleGuide        ? uploadFileToS3(styleGuide)        : Promise.resolve(""),
+          marketingLanguage ? uploadFileToS3(marketingLanguage) : Promise.resolve(""),
+          w9OrReceipt       ? uploadFileToS3(w9OrReceipt)       : Promise.resolve(""),
+          liaisonDoc        ? uploadFileToS3(liaisonDoc)        : Promise.resolve(""),
+        ]);
+
+      await axios.post(
+        `${BASE_URL}/sponsor/vetting`,
+        {
+          businessName,
+          entityType,
+          contactName,
+          contactEmail,
+          contactPhone,
+          socialLinks: socialLinks.map((s) => s.trim()).filter(Boolean),
+          missionValues,
+          csrEsgOverview,
+          logoUrl,
+          styleGuideUrl,
+          marketingLanguageUrl,
+          w9OrReceiptUrl,
+          liaisonDocUrl,
+          sponsorshipGoals,
+          fundingModels,
+          activationReadiness,
+          causeAlignment,
+          ...agreements,
+        },
+        { withCredentials: true }
       );
-      fd.append("missionValues", missionValues);
-      fd.append("csrEsgOverview", csrEsgOverview);
-
-      if (logo) fd.append("logo", logo);
-      if (styleGuide) fd.append("styleGuide", styleGuide);
-      if (marketingLanguage) fd.append("marketingLanguage", marketingLanguage);
-      if (w9OrReceipt) fd.append("w9OrReceipt", w9OrReceipt);
-      if (liaisonDoc) fd.append("liaisonDoc", liaisonDoc);
-
-      fd.append("sponsorshipGoals", JSON.stringify(sponsorshipGoals));
-      fd.append("fundingModels", JSON.stringify(fundingModels));
-      fd.append("activationReadiness", JSON.stringify(activationReadiness));
-      fd.append("causeAlignment", JSON.stringify(causeAlignment));
-
-      Object.entries(AGREEMENT_LABELS).forEach(([k]) =>
-        fd.append(k, agreements[k])
-      );
-
-      await axios.post(`${BASE_URL}/sponsor/vetting`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
 
       setSuccess("Sponsor registration submitted successfully!");
     } catch (err2) {
@@ -355,6 +359,9 @@ const SponsorRegister = () => {
               </h2>
               <p className={`max-w-2xl text-sm sm:text-base ${MW.text}`}>
                 Join Medwell as a sponsor and power point-based impact campaigns.
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                Fields marked <span className="text-[#e13429] font-bold">*</span> are required
               </p>
             </div>
           </div>
@@ -400,6 +407,7 @@ const SponsorRegister = () => {
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
                   placeholder="Full name"
+                  required
                 />
                 <TextField
                   label="Contact Email"
@@ -407,12 +415,14 @@ const SponsorRegister = () => {
                   onChange={(e) => setContactEmail(e.target.value)}
                   placeholder="name@company.com"
                   type="email"
+                  required
                 />
                 <TextField
                   label="Contact Phone"
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
                   placeholder="+1 (___) ___-____"
+                  required
                 />
               </div>
 
