@@ -1,1 +1,1 @@
-export const BASE_URL = "http://18.191.228.90:7777"
+export const BASE_URL = import.meta.env.VITE_BASE_URL || "http://18.191.228.90:7777"
